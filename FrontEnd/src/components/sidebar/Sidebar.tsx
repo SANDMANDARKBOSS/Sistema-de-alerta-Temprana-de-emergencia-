@@ -24,7 +24,7 @@ const menuItems = [
   { icon: FolderOpen, label: 'Historial de Casos', href: '/historial' },
   { icon: BarChart2, label: 'Reportes', href: '/reportes' },
   { icon: Users, label: 'Gestores y Notificaciones', href: '/gestores' },
-  { icon: Settings, label: 'Configuración', href: '#' },
+  { icon: Settings, label: 'Configuración', href: '/config' },
 ];
 
 export const Sidebar = () => {
