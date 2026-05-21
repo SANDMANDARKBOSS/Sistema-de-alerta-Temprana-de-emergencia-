@@ -81,3 +81,76 @@ export interface ResumenAlertas {
   invalidas: number;
   notificadas: number;
 }
+
+// --- NUEVOS MODELOS PÓLIZAS ---
+
+export type EstadoPoliza = 'valida' | 'en-validacion' | 'invalida';
+
+export interface PolizaCompleta {
+  id: string;
+  paciente: {
+    nombre: string;
+    id: string;
+    avatar?: string;
+  };
+  numeroPoliza: string;        // "POL-12345678"
+  aseguradora: string;         // "Salud Integral"
+  estado: EstadoPoliza;
+  estadoSubtexto: string;      // "Cobertura activa" | "Revisión en curso" | "No tiene cobertura"
+  fechaHora: string;           // "24/05/2024"
+  horaIngreso: string;         // "09:35 AM"
+  validaHasta: string | null;  // "24/05/2025" o null
+}
+
+export interface ResumenPolizasDashboard {
+  validasHoy: number;
+  validasChangePercent: string;     // "+18%"
+  enValidacion: number;
+  invalidas: number;
+  tasaValidacion: number;           // 95 (porcentaje)
+  sparklineValidadas: number[];
+  sparklineEnValidacion: number[];
+  sparklineInvalidas: number[];
+  sparklineTasa: number[];
+}
+
+// --- NUEVOS MODELOS HISTORIAL ---
+
+export type EstadoCaso = 'cerrado' | 'en-proceso' | 'escalado';
+
+export interface CasoHistorial {
+  id: string;                    // "CAS-2024-1287"
+  pacienteId: string;            // "78945612"
+  paciente: {
+    nombre: string;
+    id: string;
+    avatar?: string;
+  };
+  fechaIngreso: string;          // "24/05/2024"
+  horaIngreso: string;           // "09:35 AM"
+  motivoIngreso: string;
+  estado: EstadoCaso;
+  estadoSubtexto: string;        // "Póliza válida" | "Revisión en curso" | "Sin cobertura"
+  gestorAsignado: {
+    nombre: string;
+    avatar?: string;
+  };
+  tiempoGestion: string;         // "00:04:32" (estático, histórico)
+}
+
+export interface ResumenHistorial {
+  totalCasos: number;
+  casosCerrados: number;
+  cerradosPorcentaje: number;    // 70
+  casosEnProceso: number;
+  enProcesoPorcentaje: number;   // 23
+  casosEscalados: number;
+  escaladosPorcentaje: number;   // 8
+  tiempoPromedioGestion: string; // "6.2 min"
+  tiempoChangePercent: string;   // "-12%"
+  sparklineTotalCasos: number[];
+  sparklineCerrados: number[];
+  sparklineEnProceso: number[];
+  sparklineEscalados: number[];
+  sparklineTiempo: number[];
+}

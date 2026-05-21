@@ -12,6 +12,7 @@ interface MetricCardProps {
   sparklineData?: { value: number }[];
   sparklineColor?: string;
   colorValor?: string;
+  unidad?: string;
 }
 
 export const MetricCard: React.FC<MetricCardProps> = ({
@@ -21,7 +22,8 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   subtextoColor = 'gris',
   sparklineData,
   sparklineColor = '#1565C0',
-  colorValor
+  colorValor,
+  unidad
 }) => {
   return (
     <div className="bg-white p-6 rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col gap-4">
@@ -29,10 +31,11 @@ export const MetricCard: React.FC<MetricCardProps> = ({
         <div>
           <p className="text-[#6B7280] text-xs font-medium uppercase tracking-wider mb-1">{titulo}</p>
           <h3 
-            className="text-3xl font-bold"
+            className="text-3xl font-bold flex items-baseline gap-1"
             style={{ color: colorValor || '#111827' }}
           >
             {valor}
+            {unidad && <span className="text-xl font-semibold opacity-70">{unidad}</span>}
           </h3>
         </div>
         {sparklineData && (
