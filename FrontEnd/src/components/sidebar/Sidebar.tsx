@@ -17,7 +17,7 @@ import { clsx } from 'clsx';
 const menuItems = [
   { icon: Home, label: 'Inicio', href: '/dashboard' },
   { icon: TrendingUp, label: 'Ingresos en Tiempo Real', href: '/ingresos' },
-  { icon: Bell, label: 'Alertas Activas', href: '#' },
+  { icon: Bell, label: 'Alertas Activas', href: '/alertas' },
   { icon: FileText, label: 'Pólizas y Validaciones', href: '#' },
   { icon: FolderOpen, label: 'Historial de Casos', href: '#' },
   { icon: BarChart2, label: 'Reportes', href: '#' },
