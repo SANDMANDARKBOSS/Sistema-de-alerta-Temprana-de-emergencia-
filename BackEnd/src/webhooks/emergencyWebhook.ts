@@ -78,7 +78,7 @@ export async function procesarIngresoEmergencia(payload: IngresoPayload): Promis
     cedulaPaciente: alerta.cedulaPaciente,
     polizaId: alerta.polizaId,
     fechaIngreso: alerta.fechaIngreso.toISOString(),
-    estadoPoliza: alerta.estadoPoliza,
+    estadoPoliza: alerta.estadoPoliza as EstadoPoliza,
     preExistencias: alerta.preExistencias,
     notificacionEnviada,
     gestorAsignado: alerta.gestorAsignado,
