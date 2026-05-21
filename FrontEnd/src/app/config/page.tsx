@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
 import { ToggleSwitch } from '../../components/toggle-switch/ToggleSwitch';
 import { Settings, Building, Shield, Check } from 'lucide-react';
 import { clsx } from 'clsx';
 import { ConfiguracionSistema } from '../../shared/models';
+import { getConfiguracion, updateConfiguracion } from '../../services/api/client';
 
 export default function ConfiguracionPagina() {
   const [config, setConfig] = useState<ConfiguracionSistema>({
@@ -24,7 +25,24 @@ export default function ConfiguracionPagina() {
 
   const [guardado, setGuardado] = useState<{[k: string]: boolean}>({});
 
+  useEffect(() => {
+    let activo = true;
+    const cargar = async () => {
+      try {
+        const data = await getConfiguracion();
+        if (activo) setConfig(data);
+      } catch {
+        // mantiene defaults locales si la API falla
+      }
+    };
+    void cargar();
+    return () => { activo = false; };
+  }, []);
+
   const handleGuardar = (seccion: string) => {
+    void updateConfiguracion(config).catch(() => {
+      // si falla, no rompe la UI
+    });
     setGuardado(prev => ({ ...prev, [seccion]: true }));
     setTimeout(() => {
       setGuardado(prev => ({ ...prev, [seccion]: false }));

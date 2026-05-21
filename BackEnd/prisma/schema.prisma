@@ -60,3 +60,18 @@ model Alerta {
   @@index([cedulaPaciente])
   @@index([fechaIngreso])
 }
+
+model Configuracion {
+  id                   String   @id @default(cuid())
+  registrosPorPagina    Int      @default(10)
+  formatoFecha          String   @default("DD/MM/YYYY")
+  formatoHora           String   @default("12h")
+  institucionNombre     String   @default("Hospital Central")
+  institucionDireccion  String   @default("")
+  institucionTelefono   String   @default("")
+  institucionCorreo     String   @default("")
+  validacionAutomatica  Boolean  @default(true)
+  cierreAutomaticoCasos Boolean  @default(true)
+  actualizadoEn         DateTime @updatedAt
+  creadoEn              DateTime @default(now())
+}

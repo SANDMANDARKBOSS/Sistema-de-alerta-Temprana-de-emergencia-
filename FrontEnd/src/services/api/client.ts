@@ -1,4 +1,4 @@
-import { Ingreso } from '../../shared/models';
+import { ConfiguracionSistema, Ingreso } from '../../shared/models';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
@@ -133,4 +133,36 @@ export async function getGestoresData(): Promise<{ gestores: GestorApiItem[]; no
   }
   const data = (await resp.json()) as { gestores: GestorApiItem[]; notificaciones: NotificacionGestorApiItem[] };
   return { gestores: data.gestores ?? [], notificaciones: data.notificaciones ?? [] };
+}
+
+export async function getConfiguracion(): Promise<ConfiguracionSistema> {
+  const resp = await fetch(`${API_URL}/api/configuracion`, { cache: 'no-store' });
+  if (!resp.ok) {
+    throw new Error('No fue posible cargar configuración');
+  }
+  const raw = (await resp.json()) as any;
+  return {
+    registrosPorPagina: raw.registrosPorPagina ?? 10,
+    formatoFecha: raw.formatoFecha ?? 'DD/MM/YYYY',
+    formatoHora: raw.formatoHora ?? '12h',
+    institucion: {
+      nombre: raw.institucionNombre ?? 'Hospital Central',
+      direccion: raw.institucionDireccion ?? '',
+      telefono: raw.institucionTelefono ?? '',
+      correo: raw.institucionCorreo ?? ''
+    },
+    validacionAutomatica: raw.validacionAutomatica ?? true,
+    cierreAutomaticoCasos: raw.cierreAutomaticoCasos ?? true
+  };
+}
+
+export async function updateConfiguracion(config: ConfiguracionSistema): Promise<void> {
+  const resp = await fetch(`${API_URL}/api/configuracion`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(config)
+  });
+  if (!resp.ok) {
+    throw new Error('No fue posible guardar configuración');
+  }
 }
