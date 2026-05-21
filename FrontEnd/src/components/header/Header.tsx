@@ -1,19 +1,41 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Bell, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import { getAlertas } from '../../services/api/client';
+import { Ingreso } from '../../shared/models';
 
 export const Header = () => {
   const [time, setTime] = useState<Date | null>(null);
+  const [ingresos, setIngresos] = useState<Ingreso[]>([]);
 
   useEffect(() => {
-    // Set initial time and start interval only on client
     setTime(new Date());
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
+
+  // Cargar count real de alertas pendientes
+  useEffect(() => {
+    const cargar = async () => {
+      try {
+        const data = await getAlertas();
+        setIngresos(data);
+      } catch {
+        // ignora si la API no responde
+      }
+    };
+    void cargar();
+    const interval = setInterval(cargar, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const alertasCount = useMemo(() => {
+    if (!Array.isArray(ingresos)) return 0;
+    return ingresos.filter(i => i && i.estado === 'Pendiente').length;
+  }, [ingresos]);
 
   return (
     <header className="h-16 bg-white border-b border-gray-100 px-8 flex items-center justify-between sticky top-0 z-10">
@@ -33,18 +55,20 @@ export const Header = () => {
       <div className="flex items-center gap-6">
         <div className="relative cursor-pointer">
           <Bell size={20} className="text-[#6B7280]" />
-          <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#EF4444] text-white text-[10px] flex items-center justify-center rounded-full font-bold">
-            3
-          </span>
+          {alertasCount > 0 && (
+            <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#EF4444] text-white text-[10px] flex items-center justify-center rounded-full font-bold">
+              {alertasCount > 9 ? '9+' : alertasCount}
+            </span>
+          )}
         </div>
 
         <div className="flex items-center gap-3">
           <div className="text-right">
-            <p className="text-sm font-bold text-[#111827]">Laura Martínez</p>
-            <p className="text-[10px] text-[#6B7280] font-medium">Gestor de Casos</p>
+            <p className="text-sm font-bold text-[#111827]">Admin Sistema</p>
+            <p className="text-[10px] text-[#6B7280] font-medium">Gestor de Alertas</p>
           </div>
           <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-[#1565C0] font-bold text-sm">
-            LM
+            AS
           </div>
         </div>
       </div>
