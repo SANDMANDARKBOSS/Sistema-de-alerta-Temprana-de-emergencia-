@@ -252,4 +252,49 @@ router.get('/gestores', async (_, res) => {
   res.json({ gestores, notificaciones });
 });
 
+router.get('/configuracion', async (_, res) => {
+  const existing = await prisma.configuracion.findFirst({ orderBy: { actualizadoEn: 'desc' } });
+  if (existing) return res.json(existing);
+
+  const created = await prisma.configuracion.create({
+    data: {
+      // defaults are in schema
+    }
+  });
+  return res.json(created);
+});
+
+router.put('/configuracion', async (req, res) => {
+  const body = req.body as Partial<{
+    registrosPorPagina: number;
+    formatoFecha: string;
+    formatoHora: string;
+    institucion: { nombre: string; direccion: string; telefono: string; correo: string };
+    validacionAutomatica: boolean;
+    cierreAutomaticoCasos: boolean;
+  }>;
+
+  const existing = await prisma.configuracion.findFirst({ orderBy: { actualizadoEn: 'desc' } });
+
+  const data = {
+    registrosPorPagina: body.registrosPorPagina,
+    formatoFecha: body.formatoFecha,
+    formatoHora: body.formatoHora,
+    institucionNombre: body.institucion?.nombre,
+    institucionDireccion: body.institucion?.direccion,
+    institucionTelefono: body.institucion?.telefono,
+    institucionCorreo: body.institucion?.correo,
+    validacionAutomatica: body.validacionAutomatica,
+    cierreAutomaticoCasos: body.cierreAutomaticoCasos
+  };
+
+  const cleaned = Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined));
+
+  const updated = existing
+    ? await prisma.configuracion.update({ where: { id: existing.id }, data: cleaned })
+    : await prisma.configuracion.create({ data: cleaned });
+
+  res.json(updated);
+});
+
 export default router;
