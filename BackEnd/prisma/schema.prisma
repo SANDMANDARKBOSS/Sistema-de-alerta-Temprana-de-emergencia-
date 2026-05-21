@@ -1,13 +1,68 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EstadoPoliza {
+  VIGENTE
+  VENCIDA
+  SUSPENDIDA
+}
+
+model Asegurado {
+  id              String   @id @default(cuid())
+  nombre          String
+  cedula          String   @unique
+  polizaId        String   @unique
+  fechaNacimiento DateTime?
+  telefono        String?
+  email           String?
+  creadoEn        DateTime @default(now())
+  actualizadoEn   DateTime @updatedAt
+
+  poliza  Poliza?
+  alertas Alerta[]
+}
+
+model Poliza {
+  id                 String       @id @default(cuid())
+  polizaId           String       @unique
+  cedulaAsegurado    String
+  fechaInicio        DateTime
+  fechaFin           DateTime
+  estado             EstadoPoliza
+  cobertura          String
+  preExistencias     String?
+  gestorAsignado     String?
+  gestorEmail        String?
+  creadoEn           DateTime     @default(now())
+  actualizadoEn      DateTime     @updatedAt
+
+  asegurado Asegurado @relation(fields: [polizaId], references: [polizaId], onDelete: Restrict, onUpdate: Cascade)
+}
+
+model Alerta {
+  id                    String       @id @default(cuid())
+  nombre                String
+  cedulaPaciente        String
+  polizaId              String
+  fechaIngreso          DateTime     @default(now())
+  estadoPoliza          EstadoPoliza
+  preExistencias        String?
+  notificacionEnviada   Boolean      @default(false)
+  gestorAsignado        String?
+  hospital              String
+  notionSyncId          String?
+  resumenIA             String?
+  creadoEn              DateTime     @default(now())
+  actualizadoEn         DateTime     @updatedAt
+
+  asegurado Asegurado @relation(fields: [cedulaPaciente], references: [cedula], onDelete: Restrict, onUpdate: Cascade)
+
+  @@index([cedulaPaciente])
+  @@index([fechaIngreso])
 }

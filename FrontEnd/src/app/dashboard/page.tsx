@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
 import { MetricCard } from '../../components/metric-card/MetricCard';
 import { IngresoTabla } from '../../components/ingreso-tabla/IngresoTabla';
@@ -9,16 +9,69 @@ import { NotificacionesPanel } from '../../components/notificaciones-panel/Notif
 import { FlujoSistema } from '../../components/flujo-sistema/FlujoSistema';
 import { MOCK_INGRESOS, MOCK_NOTIFICACIONES } from '../../services/mock-data';
 import { AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { getAlertas } from '../../services/api/client';
+import { Ingreso, Notificacion } from '../../shared/models';
 
 export default function DashboardPage() {
+  const [ingresos, setIngresos] = useState<Ingreso[]>(MOCK_INGRESOS);
+
+  useEffect(() => {
+    let activo = true;
+
+    const cargar = async () => {
+      try {
+        const data = await getAlertas();
+        if (activo && data.length > 0) {
+          setIngresos(data);
+        }
+      } catch {
+        // mantiene mock para no romper UI en caso de caída del backend
+      }
+    };
+
+    void cargar();
+    const interval = setInterval(cargar, 15000);
+
+    return () => {
+      activo = false;
+      clearInterval(interval);
+    };
+  }, []);
+
   const sparklineData = [
     { value: 18 }, { value: 20 }, { value: 19 }, { value: 22 }, { value: 21 }, { value: 24 }
   ];
 
+  const polizasValidadas = ingresos.filter((i) => i.poliza === 'Póliza Válida').length;
+  const enValidacion = ingresos.filter((i) => i.poliza === 'En Validación').length;
+  const invalidas = ingresos.filter((i) => i.poliza === 'Póliza Inválida').length;
+
+  const notificaciones: Notificacion[] = useMemo(() => {
+    if (ingresos.length === 0) {
+      return MOCK_NOTIFICACIONES;
+    }
+
+    return ingresos.slice(0, 4).map((ingreso) => ({
+      tipo:
+        ingreso.poliza === 'Póliza Válida'
+          ? 'validada'
+          : ingreso.poliza === 'En Validación'
+            ? 'en-proceso'
+            : 'invalida',
+      descripcion:
+        ingreso.poliza === 'Póliza Válida'
+          ? 'Póliza validada correctamente'
+          : ingreso.poliza === 'En Validación'
+            ? 'Validación en proceso'
+            : 'Póliza inválida',
+      paciente: ingreso.paciente.nombre,
+      hora: ingreso.horaIngreso
+    }));
+  }, [ingresos]);
+
   return (
     <MainLayout>
       <div className="flex flex-col gap-8">
-        {/* Welcome Section */}
         <div className="flex justify-between items-end">
           <div>
             <h2 className="text-2xl font-bold text-[#111827]">Bienvenida, Laura Martínez</h2>
@@ -29,7 +82,7 @@ export default function DashboardPage() {
               <AlertTriangle size={18} className="text-[#EF4444]" />
               <div>
                 <p className="text-[10px] text-[#EF4444] font-bold uppercase">Alertas Activas</p>
-                <p className="text-sm font-bold text-[#111827]">5 Emergencias</p>
+                <p className="text-sm font-bold text-[#111827]">{ingresos.length} Emergencias</p>
               </div>
             </div>
             <div className="bg-green-50 px-4 py-2 rounded-lg border border-green-100 flex items-center gap-2">
@@ -42,51 +95,48 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <MetricCard 
-            titulo="Ingresos Hoy" 
-            valor="24" 
-            subtexto="+12% vs ayer" 
+          <MetricCard
+            titulo="Ingresos Hoy"
+            valor={String(ingresos.length)}
+            subtexto="Actualizado en tiempo real"
             subtextoColor="verde"
             sparklineData={sparklineData}
           />
-          <MetricCard 
-            titulo="Pólizas Validadas" 
-            valor="20" 
-            subtexto="83% del total" 
+          <MetricCard
+            titulo="Pólizas Validadas"
+            valor={String(polizasValidadas)}
+            subtexto={`${ingresos.length ? Math.round((polizasValidadas / ingresos.length) * 100) : 0}% del total`}
             subtextoColor="verde"
-            sparklineData={sparklineData.map(d => ({ value: d.value - 4 }))}
+            sparklineData={sparklineData.map((d) => ({ value: d.value - 4 }))}
             sparklineColor="#4CAF50"
           />
-          <MetricCard 
-            titulo="Tiempo de Respuesta" 
-            valor="8.4 min" 
-            subtexto="-15% vs ayer" 
+          <MetricCard
+            titulo="Tiempo de Respuesta"
+            valor="8.4 min"
+            subtexto="-15% vs ayer"
             subtextoColor="verde"
-            sparklineData={sparklineData.map(d => ({ value: 30 - d.value }))}
+            sparklineData={sparklineData.map((d) => ({ value: 30 - d.value }))}
             sparklineColor="#FFC107"
           />
-          <MetricCard 
-            titulo="Validaciones Pendientes" 
-            valor="3" 
-            subtexto="Requiere atención" 
+          <MetricCard
+            titulo="Validaciones Pendientes"
+            valor={String(enValidacion + invalidas)}
+            subtexto="Requiere atención"
             subtextoColor="rojo"
           />
         </div>
 
-        {/* Central Section: Table + Side Panels */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <IngresoTabla ingresos={MOCK_INGRESOS} />
+            <IngresoTabla ingresos={ingresos} />
           </div>
           <div className="flex flex-col gap-6">
-            <DistribucionChart valida={20} enValidacion={3} invalida={1} />
-            <NotificacionesPanel notificaciones={MOCK_NOTIFICACIONES} />
+            <DistribucionChart valida={polizasValidadas} enValidacion={enValidacion} invalida={invalidas} />
+            <NotificacionesPanel notificaciones={notificaciones} />
           </div>
         </div>
 
-        {/* Bottom Section: Flow */}
         <FlujoSistema />
       </div>
     </MainLayout>
