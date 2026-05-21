@@ -1,60 +1,91 @@
 'use client';
 
-import React from 'react';
-import { AlertTriangle, Clock, XCircle, CheckCircle } from 'lucide-react';
+import React, { memo, useEffect, useRef } from 'react';
+import * as anime from 'animejs';
 import { clsx } from 'clsx';
+import { AlertTriangle, Clock, ShieldCheck, Zap } from 'lucide-react';
 
 interface MetricAlertaCardProps {
   label: string;
-  valor: number;
+  valor: number | string;
   subtexto: string;
   tipo: 'total' | 'en-validacion' | 'invalida' | 'notificada';
 }
 
-const config = {
-  total: {
-    icon: AlertTriangle,
-    bgColor: 'bg-[#FFF3CD]',
-    iconColor: 'text-[#F59E0B]',
-  },
-  'en-validacion': {
-    icon: Clock,
-    bgColor: 'bg-[#FFF3CD]',
-    iconColor: 'text-[#F59E0B]',
-  },
-  invalida: {
-    icon: XCircle,
-    bgColor: 'bg-[#FFE4E6]',
-    iconColor: 'text-[#EF4444]',
-  },
-  notificada: {
-    icon: CheckCircle,
-    bgColor: 'bg-[#DCFCE7]',
-    iconColor: 'text-[#22C55E]',
-  },
-};
+export const MetricAlertaCard: React.FC<MetricAlertaCardProps> = memo(({ label, valor, subtexto, tipo }) => {
+  const countRef = useRef<HTMLSpanElement>(null);
+  const isNumber = typeof valor === 'number' || !isNaN(Number(valor));
 
-export const MetricAlertaCard: React.FC<MetricAlertaCardProps> = ({
-  label,
-  valor,
-  subtexto,
-  tipo
-}) => {
-  const { icon: Icon, bgColor, iconColor } = config[tipo];
+  useEffect(() => {
+    if (isNumber && countRef.current) {
+      const numValue = Number(valor);
+      
+      if (typeof anime === 'function') {
+        anime({
+          targets: countRef.current,
+          innerHTML: [0, numValue],
+          easing: 'easeOutExpo',
+          duration: 1500,
+          round: 1,
+        });
+      } else if ((anime as any)?.default) {
+        (anime as any).default({
+          targets: countRef.current,
+          innerHTML: [0, numValue],
+          easing: 'easeOutExpo',
+          duration: 1500,
+          round: 1,
+        });
+      }
+    }
+  }, [valor, isNumber]);
+
+  const styles = {
+    'total': {
+      bg: 'bg-blue-50',
+      iconColor: 'text-[#1565C0]',
+      icon: <Clock size={24} />,
+      valColor: 'text-[#111827]'
+    },
+    'en-validacion': {
+      bg: 'bg-amber-50',
+      iconColor: 'text-amber-600',
+      icon: <Zap size={24} />,
+      valColor: 'text-amber-700'
+    },
+    'invalida': {
+      bg: 'bg-red-50',
+      iconColor: 'text-red-600',
+      icon: <AlertTriangle size={24} />,
+      valColor: 'text-red-700'
+    },
+    'notificada': {
+      bg: 'bg-green-50',
+      iconColor: 'text-green-600',
+      icon: <ShieldCheck size={24} />,
+      valColor: 'text-green-700'
+    }
+  }[tipo];
 
   return (
-    <div className="bg-white p-6 rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex items-center justify-between">
-      <div className="flex flex-col gap-1.5">
-        <span className="text-[13px] text-[#6B7280] font-medium">{label}</span>
-        <span className="text-3xl font-bold text-[#111827] leading-none">{valor}</span>
-        <span className="text-xs text-[#9CA3AF]">{subtexto}</span>
+    <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col gap-4 relative overflow-hidden transition-shadow hover:shadow-md">
+      <div className={clsx("absolute top-0 right-0 w-24 h-24 -mr-8 -mt-8 rounded-full opacity-50", styles.bg)}></div>
+      
+      <div className="flex items-center gap-3 relative z-10">
+        <div className={clsx("w-12 h-12 rounded-xl flex items-center justify-center shadow-sm", styles.bg, styles.iconColor)}>
+          {styles.icon}
+        </div>
+        <p className="text-xs font-bold text-[#6B7280] uppercase tracking-wider">{label}</p>
       </div>
-      <div className={clsx(
-        "w-14 h-14 rounded-full flex items-center justify-center shrink-0",
-        bgColor
-      )}>
-        <Icon size={28} className={iconColor} />
+      
+      <div className="relative z-10">
+        <h3 className={clsx("text-4xl font-black mb-1 tracking-tight", styles.valColor)}>
+          <span ref={isNumber ? countRef : null}>{isNumber ? '0' : valor}</span>
+        </h3>
+        <p className="text-xs font-semibold text-[#9CA3AF]">{subtexto}</p>
       </div>
     </div>
   );
-};
+});
+
+MetricAlertaCard.displayName = 'MetricAlertaCard';

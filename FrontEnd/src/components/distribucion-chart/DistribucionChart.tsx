@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { memo } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { clsx } from 'clsx';
 
@@ -15,7 +15,7 @@ interface DistribucionChartProps {
   modo?: 'polizas' | 'alertas';
 }
 
-export const DistribucionChart: React.FC<DistribucionChartProps> = ({ 
+export const DistribucionChart: React.FC<DistribucionChartProps> = memo(({ 
   valida = 0, 
   enValidacion = 0, 
   invalida = 0,
@@ -37,7 +37,7 @@ export const DistribucionChart: React.FC<DistribucionChartProps> = ({
   const total = data.reduce((acc, curr) => acc + curr.value, 0);
 
   return (
-    <div className="bg-white p-6 rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center">
+    <div className="bg-white p-6 rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] flex flex-col items-center w-full">
       <div className="flex justify-between items-center w-full mb-6">
         <h3 className="text-sm font-bold text-[#111827]">
           {modo === 'polizas' ? 'Estado de Pólizas' : 'Alertas por Estado'}
@@ -51,7 +51,7 @@ export const DistribucionChart: React.FC<DistribucionChartProps> = ({
         )}
       </div>
       
-      <div className="flex items-center gap-6 w-full">
+      <div className="flex items-center gap-6 w-full justify-center">
         <div className="relative w-32 h-32 shrink-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
@@ -63,6 +63,8 @@ export const DistribucionChart: React.FC<DistribucionChartProps> = ({
                 outerRadius={60}
                 paddingAngle={5}
                 dataKey="value"
+                isAnimationActive={true}
+                animationDuration={1500} // Performance boost
               >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
@@ -76,7 +78,7 @@ export const DistribucionChart: React.FC<DistribucionChartProps> = ({
           </div>
         </div>
 
-        <div className="flex-1 space-y-2">
+        <div className="flex-1 space-y-2 max-w-[120px]">
           {data.map((item) => (
             <div key={item.name} className="flex flex-col">
               <div className="flex items-center justify-between">
@@ -95,4 +97,6 @@ export const DistribucionChart: React.FC<DistribucionChartProps> = ({
       </div>
     </div>
   );
-};
+});
+
+DistribucionChart.displayName = 'DistribucionChart';

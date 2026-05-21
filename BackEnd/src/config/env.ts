@@ -1,42 +1,39 @@
+import { z } from 'zod';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-const required = ['DATABASE_URL'];
+const envSchema = z.object({
+  PORT: z.string().default('4000').transform(Number),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  FRONTEND_URL: z.string().url().default('http://localhost:3000'),
+  DATABASE_URL: z.string().min(1),
+  
+  NOTION_TOKEN: z.string().min(1),
+  NOTION_ASEGURADOS_DB_ID: z.string().min(1),
+  NOTION_POLIZAS_DB_ID: z.string().min(1),
+  NOTION_ALERTAS_DB_ID: z.string().min(1),
+  
+  GEMINI_API_KEY: z.string().min(1),
+  GEMINI_MODEL: z.string().default('gemini-1.5-flash'),
+  GROQ_API_KEY: z.string().min(1),
+  GROQ_MODEL: z.string().default('llama-3.1-8b-instant'),
+  
+  SMTP_SERVER: z.string().min(1).default('smtp.gmail.com'),
+  SMTP_PORT: z.string().default('587').transform(Number),
+  SMTP_SECURE: z.string().default('false').transform(val => val.toLowerCase() === 'true'),
+  SMTP_USER: z.string().email(),
+  SMTP_PASSWORD: z.string().min(1),
+  
+  DESTINATION_HOSPITAL: z.string().email(),
+  DESTINATION_INSURANCE: z.string().email(),
+});
 
-for (const key of required) {
-  if (!process.env[key]) {
-    throw new Error(`Falta variable de entorno obligatoria: ${key}`);
-  }
+const parsedEnv = envSchema.safeParse(process.env);
+
+if (!parsedEnv.success) {
+  console.error("❌ Invalid environment variables:", parsedEnv.error.format());
+  throw new Error("Invalid environment variables");
 }
 
-export const env = {
-  nodeEnv: process.env.NODE_ENV ?? 'development',
-  port: Number(process.env.PORT ?? 4000),
-  frontendUrl: process.env.FRONTEND_URL ?? 'http://localhost:3000',
-
-  databaseUrl: process.env.DATABASE_URL as string,
-
-  notionToken: process.env.NOTION_TOKEN,
-  notionAseguradosDbId: process.env.NOTION_ASEGURADOS_DB_ID,
-  notionPolizasDbId: process.env.NOTION_POLIZAS_DB_ID,
-  notionAlertasDbId: process.env.NOTION_ALERTAS_DB_ID,
-
-  geminiApiKey: process.env.GEMINI_API_KEY,
-  geminiModel: process.env.GEMINI_MODEL ?? 'gemini-1.5-flash',
-
-  groqApiKey: process.env.GROQ_API_KEY,
-  groqModel: process.env.GROQ_MODEL ?? 'llama-3.1-8b-instant',
-
-  emailHost: process.env.SMTP_SERVER ?? process.env.EMAIL_HOST ?? 'smtp.gmail.com',
-  emailPort: Number(process.env.SMTP_PORT ?? process.env.EMAIL_PORT ?? 587),
-  emailSecure:
-    (process.env.SMTP_SECURE ?? process.env.EMAIL_SECURE ?? 'false').toLowerCase() === 'true',
-  emailRemitente: process.env.SMTP_USER ?? process.env.EMAIL_REMITENTE,
-  emailPassword: process.env.SMTP_PASSWORD ?? process.env.EMAIL_PASSWORD,
-
-  emailHospitalDefault:
-    process.env.DESTINATION_HOSPITAL ?? process.env.EMAIL_HOSPITAL_DEFAULT,
-  emailGestorDefault:
-    process.env.DESTINATION_INSURANCE ?? process.env.EMAIL_GESTOR_DEFAULT
-};
+export const env = parsedEnv.data;

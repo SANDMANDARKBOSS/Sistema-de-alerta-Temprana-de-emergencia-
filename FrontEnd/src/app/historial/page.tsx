@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
 import { MetricCard } from '../../components/metric-card/MetricCard';
 import { CasoHistoricoApiItem, getHistorialCasos } from '../../services/api/client';
@@ -15,7 +15,10 @@ export default function HistorialPage() {
     const cargar = async () => {
       try {
         const data = await getHistorialCasos();
-        if (activo) setCasos(data);
+        if (activo) setCasos(Array.isArray(data) ? data : []);
+      } catch (e) {
+        console.error("Error cargando historial:", e);
+        if (activo) setCasos([]);
       } finally {
         if (activo) setCargando(false);
       }
@@ -24,8 +27,12 @@ export default function HistorialPage() {
     void cargar();
   }, []);
 
-  const notificados = casos.filter((c) => c.notificacionEnviada).length;
-  const pendientes = casos.length - notificados;
+  const stats = useMemo(() => {
+    const data = Array.isArray(casos) ? casos : [];
+    const notificados = data.filter((c) => c && c.notificacionEnviada).length;
+    const pendientes = data.length - notificados;
+    return { total: data.length, notificados, pendientes };
+  }, [casos]);
 
   return (
     <MainLayout>
@@ -36,9 +43,9 @@ export default function HistorialPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <MetricCard titulo="Total Casos" valor={String(casos.length)} subtexto={cargando ? 'Cargando...' : 'Procesados'} subtextoColor="gris" />
-          <MetricCard titulo="Notificados" valor={String(notificados)} subtexto="Con aviso enviado" subtextoColor="verde" />
-          <MetricCard titulo="Pendientes" valor={String(pendientes)} subtexto="Requieren gestión" subtextoColor="rojo" />
+          <MetricCard titulo="Total Casos" valor={String(stats.total)} subtexto={cargando ? 'Cargando...' : 'Procesados'} subtextoColor="gris" />
+          <MetricCard titulo="Notificados" valor={String(stats.notificados)} subtexto="Con aviso enviado" subtextoColor="verde" />
+          <MetricCard titulo="Pendientes" valor={String(stats.pendientes)} subtexto="Requieren gestión" subtextoColor="rojo" />
         </div>
 
         <div className="bg-white rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
@@ -55,21 +62,22 @@ export default function HistorialPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {casos.length === 0 && !cargando && (
+                {(casos.length === 0 && !cargando) ? (
                   <tr>
                     <td colSpan={6} className="px-6 py-10 text-center text-sm text-[#6B7280]">No hay casos en historial.</td>
                   </tr>
+                ) : (
+                  casos.map((c) => (
+                    <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4 text-sm font-bold text-[#111827]">{c.nombre}</td>
+                      <td className="px-6 py-4 text-sm text-[#111827]">{c.asegurado?.nombre ?? c.cedulaPaciente}</td>
+                      <td className="px-6 py-4 text-sm text-[#111827]">{c.hospital}</td>
+                      <td className="px-6 py-4 text-sm text-[#111827]">{c.estadoPoliza}</td>
+                      <td className="px-6 py-4 text-sm text-[#111827]">{c.notificacionEnviada ? 'Enviada' : 'Pendiente'}</td>
+                      <td className="px-6 py-4 text-sm text-[#111827]">{new Date(c.fechaIngreso).toLocaleString('es-CO')}</td>
+                    </tr>
+                  ))
                 )}
-                {casos.map((c) => (
-                  <tr key={c.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 text-sm font-bold text-[#111827]">{c.nombre}</td>
-                    <td className="px-6 py-4 text-sm text-[#111827]">{c.asegurado?.nombre ?? c.cedulaPaciente}</td>
-                    <td className="px-6 py-4 text-sm text-[#111827]">{c.hospital}</td>
-                    <td className="px-6 py-4 text-sm text-[#111827]">{c.estadoPoliza}</td>
-                    <td className="px-6 py-4 text-sm text-[#111827]">{c.notificacionEnviada ? 'Enviada' : 'Pendiente'}</td>
-                    <td className="px-6 py-4 text-sm text-[#111827]">{new Date(c.fechaIngreso).toLocaleString('es-CO')}</td>
-                  </tr>
-                ))}
               </tbody>
             </table>
           </div>
