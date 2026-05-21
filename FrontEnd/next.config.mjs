@@ -1,16 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true,
-  // Desactivamos el cache persistente de webpack si detectamos inestabilidad en Windows
-  webpack: (config, { dev, isServer }) => {
-    if (dev && !isServer) {
-      // Forzamos a webpack a no cachear módulos que causan el error ./682.js
-      config.cache = false;
-    }
+  reactStrictMode: false, // Desactivamos strict mode para reducir re-renders en desarrollo y estabilizar HMR
+  webpack: (config) => {
+    config.resolve.fallback = { fs: false, net: false, tls: false };
     return config;
   },
-  // Optimización de fuentes para evitar errores de hidratación
-  optimizeFonts: true,
 };
 
 export default nextConfig;

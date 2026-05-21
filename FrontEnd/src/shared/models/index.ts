@@ -82,8 +82,6 @@ export interface ResumenAlertas {
   notificadas: number;
 }
 
-// --- NUEVOS MODELOS PÓLIZAS ---
-
 export type EstadoPoliza = 'valida' | 'en-validacion' | 'invalida';
 
 export interface PolizaCompleta {
@@ -113,8 +111,6 @@ export interface ResumenPolizasDashboard {
   sparklineInvalidas: number[];
   sparklineTasa: number[];
 }
-
-// --- NUEVOS MODELOS HISTORIAL ---
 
 export type EstadoCaso = 'cerrado' | 'en-proceso' | 'escalado';
 
@@ -153,4 +149,67 @@ export interface ResumenHistorial {
   sparklineEnProceso: number[];
   sparklineEscalados: number[];
   sparklineTiempo: number[];
+}
+
+// --- NUEVOS MODELOS REPORTES ---
+
+export interface ReporteResumen {
+  metricas: {
+    totalIngresos: number;
+    polizasValidadas: number;
+    alertasGeneradas: number;
+    polizasInvalidas: number;
+    tiempoPromedio: string;
+  };
+  cambios: {
+    ingresos: string;
+    polizas: string;
+    alertas: string;
+    invalidas: string;
+    tiempo: string;
+  };
+  ingresosPorDia: { fecha: string; total: number }[];
+  distribucionPolizas: { valida: number; enValidacion: number; invalida: number };
+  distribucionAlertas: { sinCobertura: number; pendientes: number; enProceso: number };
+  detallesDiarios: DetalleDiario[];
+}
+
+export interface DetalleDiario {
+  fecha: string;
+  ingresos: number;
+  polizasValidadas: number;
+  enValidacion: number;
+  invalidas: number;
+  alertasGeneradas: number;
+  tiempoPromedio: string;
+}
+
+export interface LineDataset {
+  label: string;
+  data: number[];
+  color: string;
+}
+
+// --- NUEVOS MODELOS GESTORES ---
+
+export interface Gestor {
+  id: string;
+  nombre: string;
+  rol: string;
+  correo: string;
+  area: string;
+  estado: 'Activo' | 'Inactivo';
+  ultimoAcceso: { fecha: string; hora: string };
+  avatar?: string | null;
+}
+
+export interface NotificacionGestor {
+  fechaHora: string;
+  paciente: { nombre: string; id: string };
+  tipo: string;
+  tipoColor: 'rojo' | 'naranja' | 'azul' | 'verde';
+  canal: 'Sistema' | 'Email' | 'SMS';
+  mensaje: string;
+  enviadoPor: string;
+  estado: 'Leído' | 'Pendiente' | 'Enviado';
 }
