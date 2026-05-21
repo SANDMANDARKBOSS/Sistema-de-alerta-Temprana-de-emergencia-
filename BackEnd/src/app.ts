@@ -9,7 +9,21 @@ const app = express();
 
 app.use(
   cors({
-    origin: env.frontendUrl
+    origin: (origin, callback) => {
+      const allowed = [
+        env.FRONTEND_URL,
+        'http://localhost:3000',
+        'http://localhost:3001',
+      ];
+      if (!origin || allowed.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: false
   })
 );
 app.use(helmet());

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { IngresoCompleto } from '../../shared/models';
-import { MoreVertical } from 'lucide-react';
+import { MoreVertical, Eye, FileText, Send, Trash2 } from 'lucide-react';
 import { clsx } from 'clsx';
 
 interface TablaIngresosCompletaProps {
@@ -18,6 +18,15 @@ export const TablaIngresosCompleta: React.FC<TablaIngresosCompletaProps> = ({
   onVerDetalles,
   onAccionContextual
 }) => {
+  const [menuAbierto, setMenuAbierto] = React.useState<string | null>(null);
+
+  // Cerrar menú al hacer clic fuera
+  React.useEffect(() => {
+    const cerrar = () => setMenuAbierto(null);
+    window.addEventListener('click', cerrar);
+    return () => window.removeEventListener('click', cerrar);
+  }, []);
+
   if (cargando) {
     return (
       <div className="bg-white rounded-xl shadow-sm overflow-hidden animate-pulse">
@@ -98,16 +107,58 @@ export const TablaIngresosCompleta: React.FC<TablaIngresosCompletaProps> = ({
                   </div>
                 </td>
                 <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2">
+                  <div className="flex items-center justify-end gap-2 relative">
                     <button 
                       onClick={() => onVerDetalles(ingreso)}
                       className="px-3 py-1.5 border border-gray-200 rounded-lg text-[13px] font-medium text-[#374151] hover:bg-gray-50 transition-colors"
                     >
                       Ver detalles
                     </button>
-                    <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors">
-                      <MoreVertical size={18} />
-                    </button>
+                    <div className="relative">
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setMenuAbierto(menuAbierto === ingreso.id ? null : ingreso.id);
+                        }}
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                      >
+                        <MoreVertical size={18} />
+                      </button>
+
+                      {menuAbierto === ingreso.id && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-xl shadow-xl z-50 py-2">
+                          <button 
+                            onClick={() => onVerDetalles(ingreso)}
+                            className="w-full px-4 py-2 text-left text-sm text-[#374151] hover:bg-gray-50 flex items-center gap-2"
+                          >
+                            <Eye size={16} className="text-gray-400" />
+                            Ver Historial
+                          </button>
+                          <button 
+                            onClick={() => onAccionContextual(ingreso, 'poliza')}
+                            className="w-full px-4 py-2 text-left text-sm text-[#374151] hover:bg-gray-50 flex items-center gap-2"
+                          >
+                            <FileText size={16} className="text-gray-400" />
+                            Validar Póliza
+                          </button>
+                          <button 
+                            onClick={() => onAccionContextual(ingreso, 'notificar')}
+                            className="w-full px-4 py-2 text-left text-sm text-[#374151] hover:bg-gray-50 flex items-center gap-2"
+                          >
+                            <Send size={16} className="text-gray-400" />
+                            Reenviar Email
+                          </button>
+                          <div className="border-t border-gray-50 my-1"></div>
+                          <button 
+                            onClick={() => onAccionContextual(ingreso, 'eliminar')}
+                            className="w-full px-4 py-2 text-left text-sm text-[#EF4444] hover:bg-red-50 flex items-center gap-2"
+                          >
+                            <Trash2 size={16} />
+                            Descartar Alerta
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </td>
               </tr>

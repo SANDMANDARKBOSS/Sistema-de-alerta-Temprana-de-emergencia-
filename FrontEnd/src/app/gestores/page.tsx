@@ -1,272 +1,264 @@
 'use client';
 
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
 import { MetricCard } from '../../components/metric-card/MetricCard';
-import { TablaPaginada, ColumnaConfig } from '../../components/tabla-paginada/TablaPaginada';
-import { MOCK_GESTORES, MOCK_NOTIFICACIONES_GESTOR } from '../../services/mock-data';
-import { clsx } from 'clsx';
-import { MoreVertical } from 'lucide-react';
 import { getGestoresData, GestorApiItem, NotificacionGestorApiItem } from '../../services/api/client';
+import { clsx } from 'clsx';
+import { 
+  Users, 
+  Mail, 
+  Bell, 
+  Monitor, 
+  Search, 
+  Filter, 
+  MoreHorizontal,
+  ChevronRight,
+  UserPlus
+} from 'lucide-react';
 
 export default function GestoresPagina() {
-  const [tabActivo, setTabActivo] = useState<'gestores' | 'notificaciones'>('gestores');
-  const [gestores, setGestores] = useState<GestorApiItem[]>(MOCK_GESTORES);
-  const [notificaciones, setNotificaciones] = useState<NotificacionGestorApiItem[]>(MOCK_NOTIFICACIONES_GESTOR);
+  const [gestores, setGestores] = useState<GestorApiItem[]>([]);
+  const [notificaciones, setNotificaciones] = useState<NotificacionGestorApiItem[]>([]);
+  const [cargando, setCargando] = useState(true);
   const [apiDisponible, setApiDisponible] = useState(true);
-  
-  const [paginaGestores, setPaginaGestores] = useState(1);
-  const [filasGestores, setFilasGestores] = useState(10);
+  const [tabActivo, setTabActivo] = useState<'gestores' | 'notificaciones'>('gestores');
+  const [busqueda, setBusqueda] = useState('');
 
-  const columnasGestores: ColumnaConfig[] = [
-    { 
-      key: 'nombre', 
-      label: 'Nombre',
-      render: (val, item) => (
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-[#1565C0] font-bold">
-            {val.split(' ').map((n: string) => n[0]).join('').substring(0, 2)}
-          </div>
-          <div>
-            <p className="font-bold text-[#111827]">{val}</p>
-            <p className="text-[12px] text-[#6B7280]">ID: {item.id}</p>
-          </div>
-        </div>
-      )
-    },
-    { key: 'rol', label: 'Rol' },
-    { key: 'correo', label: 'Correo Electrónico' },
-    { key: 'area', label: 'Área / Departamento' },
-    { 
-      key: 'estado', 
-      label: 'Estado',
-      render: (val) => (
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[#4CAF50]"></div>
-          <span className="text-[#4CAF50] font-medium">{val}</span>
-        </div>
-      )
-    },
-    { 
-      key: 'ultimoAcceso', 
-      label: 'Último Acceso',
-      render: (val) => (
-        <div>
-          <p className="text-[#111827]">{val.fecha}</p>
-          <p className="text-[12px] text-[#6B7280]">{val.hora}</p>
-        </div>
-      )
-    },
-    { 
-      key: 'acciones', 
-      label: 'Acciones',
-      headerClass: 'text-right',
-      cellClass: 'text-right',
-      render: () => (
-        <div className="flex items-center justify-end gap-2">
-          <button className="px-3 py-1.5 border border-[#1565C0] text-[#1565C0] rounded-md text-xs font-bold hover:bg-[#E3F2FD] transition-colors">
-            Ver perfil
-          </button>
-          <button className="p-1.5 text-gray-400 hover:text-gray-600 rounded-md">
-            <MoreVertical size={18} />
-          </button>
-        </div>
-      )
+  const cargarDatos = useCallback(async () => {
+    try {
+      const data = await getGestoresData();
+      setGestores(Array.isArray(data.gestores) ? data.gestores : []);
+      setNotificaciones(Array.isArray(data.notificaciones) ? data.notificaciones : []);
+      setApiDisponible(true);
+    } catch (error) {
+      console.error('Error cargando gestores:', error);
+      setApiDisponible(false);
+      setGestores([]);
+      setNotificaciones([]);
+    } finally {
+      setCargando(false);
     }
-  ];
-
-  const columnasNotificaciones: ColumnaConfig[] = [
-    { 
-      key: 'fechaHora', 
-      label: 'Fecha y Hora',
-      cellClass: 'font-medium'
-    },
-    { 
-      key: 'paciente', 
-      label: 'Paciente',
-      render: (val) => (
-        <div>
-          <p className="font-bold text-[#111827]">{val.nombre}</p>
-          <p className="text-[12px] text-[#6B7280]">ID: {val.id}</p>
-        </div>
-      )
-    },
-    { 
-      key: 'tipo', 
-      label: 'Tipo de Notificación',
-      render: (val, item: any) => (
-        <div className="flex items-center gap-2">
-          <div className={clsx(
-            "w-2 h-2 rounded-full",
-            item.tipoColor === 'rojo' && "bg-[#EF4444]",
-            item.tipoColor === 'naranja' && "bg-[#F59E0B]",
-            item.tipoColor === 'azul' && "bg-[#3B82F6]"
-          )}></div>
-          <span className={clsx(
-            "font-medium",
-            item.tipoColor === 'rojo' && "text-[#EF4444]",
-            item.tipoColor === 'naranja' && "text-[#F59E0B]",
-            item.tipoColor === 'azul' && "text-[#3B82F6]"
-          )}>{val}</span>
-        </div>
-      )
-    },
-    { key: 'canal', label: 'Canal' },
-    { key: 'mensaje', label: 'Mensaje', cellClass: 'max-w-xs truncate' },
-    { key: 'enviadoPor', label: 'Enviado por' },
-    { 
-      key: 'estado', 
-      label: 'Estado',
-      render: (val) => (
-        <div className="flex items-center gap-2">
-          <div className={clsx(
-            "w-2 h-2 rounded-full",
-            val === 'Leído' && "bg-[#4CAF50]",
-            val === 'Pendiente' && "bg-[#FF9800]",
-            val === 'Enviado' && "bg-[#1565C0]"
-          )}></div>
-          <span className={clsx(
-            "font-medium",
-            val === 'Leído' && "text-[#4CAF50]",
-            val === 'Pendiente' && "text-[#FF9800]",
-            val === 'Enviado' && "text-[#1565C0]"
-          )}>{val}</span>
-        </div>
-      )
-    }
-  ];
-
-  useEffect(() => {
-    let activo = true;
-
-    const cargar = async () => {
-      try {
-        const data = await getGestoresData();
-        if (!activo) return;
-        setGestores(data.gestores.length ? data.gestores : MOCK_GESTORES);
-        setNotificaciones(data.notificaciones.length ? data.notificaciones : MOCK_NOTIFICACIONES_GESTOR);
-        setApiDisponible(true);
-      } catch {
-        if (!activo) return;
-        setApiDisponible(false);
-        setGestores(MOCK_GESTORES);
-        setNotificaciones(MOCK_NOTIFICACIONES_GESTOR);
-      }
-    };
-
-    void cargar();
-    const interval = setInterval(cargar, 15000);
-    return () => {
-      activo = false;
-      clearInterval(interval);
-    };
   }, []);
 
+  useEffect(() => {
+    void cargarDatos();
+  }, [cargarDatos]);
+
   const metricas = useMemo(() => {
-    const gestoresActivos = gestores.filter((g) => g.estado === 'Activo').length;
-    const notificacionesHoy = notificaciones.length;
-    const pendientesLectura = notificaciones.filter((n) => n.estado === 'Pendiente').length;
+    const safeGestores = Array.isArray(gestores) ? gestores : [];
+    const safeNotifs = Array.isArray(notificaciones) ? notificaciones : [];
+    
+    const gestoresActivos = safeGestores.filter(g => g && g.estado === 'Activo').length;
+    const notificacionesHoy = safeNotifs.length;
+    const pendientesLectura = safeNotifs.filter(n => n && n.estado === 'Pendiente').length;
+    
     return { gestoresActivos, notificacionesHoy, pendientesLectura };
   }, [gestores, notificaciones]);
+
+  const filteredGestores = useMemo(() => {
+    const safeGestores = Array.isArray(gestores) ? gestores : [];
+    if (!busqueda) return safeGestores;
+    const low = busqueda.toLowerCase();
+    return safeGestores.filter(g => 
+      g && (
+        g.nombre?.toLowerCase().includes(low) || 
+        g.correo?.toLowerCase().includes(low) || 
+        g.area?.toLowerCase().includes(low)
+      )
+    );
+  }, [gestores, busqueda]);
 
   return (
     <MainLayout>
       <div className="flex flex-col gap-8">
-        <div>
-          <h1 className="text-3xl font-bold text-[#111827]">Gestores y Notificaciones</h1>
-          <p className="text-[#6B7280] text-sm mt-1">Administración de usuarios gestores y registro de comunicaciones del sistema. Fuente: {apiDisponible ? 'API' : 'respaldo'}.</p>
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-[#111827]">Gestores y Notificaciones</h1>
+            <p className="text-[#6B7280] text-sm mt-1">Administración de usuarios gestores y registro de comunicaciones del sistema.</p>
+          </div>
+          <button className="flex items-center gap-2 bg-[#1565C0] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#0D47A1] transition-colors shadow-sm">
+            <UserPlus size={18} />
+            Nuevo Gestor
+          </button>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard 
             titulo="Gestores Activos" 
-            valor={String(metricas.gestoresActivos)} 
+            valor={metricas.gestoresActivos} 
             subtexto="Usuarios con acceso al sistema" 
-            icono="Users"
-            iconoColor="#1565C0"
+            icon={<Users size={28} className="text-[#1565C0]" />}
             iconoBgColor="#E3F2FD"
           />
           <MetricCard 
-            titulo="Notificaciones Enviadas Hoy" 
-            valor={String(metricas.notificacionesHoy)} 
+            titulo="Notificaciones Enviadas" 
+            valor={metricas.notificacionesHoy} 
             subtexto="Total de comunicaciones" 
-            icono="Mail"
-            iconoColor="#4CAF50"
+            icon={<Mail size={28} className="text-[#4CAF50]" />}
             iconoBgColor="#E8F5E9"
           />
           <MetricCard 
             titulo="Pendientes de Lectura" 
-            valor={String(metricas.pendientesLectura)} 
+            valor={metricas.pendientesLectura} 
             subtexto="Requieren atención" 
-            icono="Bell"
-            iconoColor="#F59E0B"
+            icon={<Bell size={28} className="text-[#F59E0B]" />}
             iconoBgColor="#FFF8E1"
           />
           <MetricCard 
             titulo="Canales Activos" 
             valor="3" 
             subtexto="Email, SMS, Sistema" 
-            icono="Monitor"
-            iconoColor="#8B5CF6"
+            icon={<Monitor size={28} className="text-[#8B5CF6]" />}
             iconoBgColor="#F5F3FF"
           />
         </div>
 
-        <div className="flex flex-col gap-6">
-          <div className="flex border-b-2 border-gray-200">
+        <div className="bg-white rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+          <div className="flex border-b border-gray-100">
             <button 
               onClick={() => setTabActivo('gestores')}
               className={clsx(
-                "px-6 py-3 text-sm font-semibold transition-all duration-200 relative -mb-[2px]",
-                tabActivo === 'gestores' 
-                  ? "text-[#1565C0] border-b-2 border-[#1565C0]" 
-                  : "text-[#6B7280] hover:text-[#374151] border-b-2 border-transparent"
+                "px-6 py-4 text-sm font-bold transition-colors relative",
+                tabActivo === 'gestores' ? "text-[#1565C0]" : "text-[#6B7280] hover:text-[#111827]"
               )}
             >
-              Gestores
+              Lista de Gestores
+              {tabActivo === 'gestores' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1565C0]"></div>}
             </button>
             <button 
               onClick={() => setTabActivo('notificaciones')}
               className={clsx(
-                "px-6 py-3 text-sm font-semibold transition-all duration-200 relative -mb-[2px]",
-                tabActivo === 'notificaciones' 
-                  ? "text-[#1565C0] border-b-2 border-[#1565C0]" 
-                  : "text-[#6B7280] hover:text-[#374151] border-b-2 border-transparent"
+                "px-6 py-4 text-sm font-bold transition-colors relative",
+                tabActivo === 'notificaciones' ? "text-[#1565C0]" : "text-[#6B7280] hover:text-[#111827]"
               )}
             >
-              Notificaciones Recientes
+              Registro de Notificaciones
+              {tabActivo === 'notificaciones' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#1565C0]"></div>}
             </button>
           </div>
 
-          {tabActivo === 'gestores' ? (
-            <TablaPaginada 
-              columnas={columnasGestores}
-              datos={gestores}
-              totalRegistros={gestores.length}
-              paginaActual={paginaGestores}
-              filasPorPagina={filasGestores}
-              onPaginaChange={setPaginaGestores}
-              onFilasChange={setFilasGestores}
-            />
-          ) : (
-            <div className="flex flex-col gap-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-bold text-[#111827]">Notificaciones Recientes</h3>
-                <button className="text-[#1565C0] text-sm font-bold hover:underline">
-                  Ver todas las notificaciones →
-                </button>
-              </div>
-              <TablaPaginada 
-                columnas={columnasNotificaciones}
-                datos={notificaciones}
-                totalRegistros={notificaciones.length}
-                paginaActual={1}
-                filasPorPagina={10}
-                onPaginaChange={() => {}}
-                onFilasChange={() => {}}
+          <div className="p-6 border-b border-gray-100 bg-gray-50 flex flex-wrap gap-4 items-center justify-between">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-[#9CA3AF]" size={18} />
+              <input 
+                type="text" 
+                placeholder="Buscar por nombre, correo o área..." 
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1565C0] bg-white transition-colors"
+                value={busqueda}
+                onChange={(e) => setBusqueda(e.target.value)}
               />
             </div>
-          )}
+            <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-[#374151] hover:bg-gray-100 transition-colors bg-white">
+              <Filter size={16} />
+              Filtrar
+            </button>
+          </div>
+
+          <div className="overflow-x-auto min-h-[300px]">
+            {cargando ? (
+              <div className="p-20 text-center flex flex-col items-center gap-3">
+                <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-sm font-bold text-gray-500">Cargando datos en vivo...</p>
+              </div>
+            ) : tabActivo === 'gestores' ? (
+              <table className="w-full text-left">
+                <thead>
+                  <tr className="text-[#6B7280] text-[11px] font-bold uppercase tracking-wider border-b border-gray-100 bg-gray-50">
+                    <th className="px-6 py-4">Gestor</th>
+                    <th className="px-6 py-4">Rol / Área</th>
+                    <th className="px-6 py-4">Estado</th>
+                    <th className="px-6 py-4">Último Acceso</th>
+                    <th className="px-6 py-4 text-right">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {filteredGestores.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-10 text-center text-sm text-[#6B7280]">No se encontraron gestores.</td>
+                    </tr>
+                  ) : filteredGestores.map((gestor) => (
+                    <tr key={gestor.id} className="hover:bg-gray-50 transition-colors">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center text-[#1565C0] font-bold text-sm shadow-sm">
+                            {gestor.nombre?.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-[#111827]">{gestor.nombre}</p>
+                            <p className="text-[11px] text-[#6B7280]">{gestor.correo}</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div>
+                          <p className="text-sm font-medium text-[#111827]">{gestor.rol}</p>
+                          <p className="text-[11px] text-[#6B7280]">{gestor.area}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={clsx(
+                          "px-2.5 py-1 rounded-full text-[10px] font-bold",
+                          gestor.estado === 'Activo' ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"
+                        )}>
+                          {gestor.estado}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="text-[11px] text-[#374151]">
+                          <p className="font-medium">{gestor.ultimoAcceso?.fecha || 'Nunca'}</p>
+                          <p className="text-[#6B7280]">{gestor.ultimoAcceso?.hora || '--:--'}</p>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button className="p-2 text-[#6B7280] hover:text-[#111827] hover:bg-gray-100 rounded-lg transition-colors">
+                          <MoreHorizontal size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {notificaciones.length === 0 ? (
+                  <div className="px-6 py-10 text-center text-sm text-[#6B7280]">No hay registro de notificaciones.</div>
+                ) : notificaciones.map((notif, idx) => (
+                  <div key={idx} className="px-6 py-4 hover:bg-gray-50 transition-colors flex items-center justify-between group">
+                    <div className="flex gap-4">
+                      <div className={clsx(
+                        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-sm",
+                        notif.tipoColor === 'rojo' && "bg-red-50 text-red-500",
+                        notif.tipoColor === 'naranja' && "bg-orange-50 text-orange-500",
+                        notif.tipoColor === 'azul' && "bg-blue-50 text-blue-500",
+                        notif.tipoColor === 'verde' && "bg-green-50 text-green-500"
+                      )}>
+                        {notif.canal === 'Email' ? <Mail size={20} /> : notif.canal === 'SMS' ? <Monitor size={20} /> : <Bell size={20} />}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs font-bold text-[#111827]">{notif.tipo}</span>
+                          <span className="text-[10px] text-[#6B7280]">•</span>
+                          <span className="text-[10px] text-[#6B7280] font-medium">{notif.fechaHora}</span>
+                        </div>
+                        <p className="text-sm text-[#374151] mb-1">{notif.mensaje}</p>
+                        <p className="text-[11px] text-[#6B7280]">
+                          Paciente: <span className="font-bold text-[#111827]">{notif.paciente?.nombre}</span> ({notif.paciente?.id})
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <div className="text-right hidden sm:block">
+                        <p className="text-[10px] text-[#6B7280] uppercase font-bold tracking-wider">Enviado vía</p>
+                        <p className="text-xs font-bold text-[#111827]">{notif.canal}</p>
+                      </div>
+                      <ChevronRight size={18} className="text-gray-300 group-hover:text-gray-500 transition-colors" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </MainLayout>
