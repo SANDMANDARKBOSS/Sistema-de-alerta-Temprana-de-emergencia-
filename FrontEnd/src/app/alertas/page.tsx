@@ -7,41 +7,87 @@ import { FiltroEstadoDropdown } from '../../components/filtro-estado-dropdown/Fi
 import { BotonFiltros } from '../../components/boton-filtros/BotonFiltros';
 import { TablaAlertas } from '../../components/tabla-alertas/TablaAlertas';
 import { Paginacion } from '../../components/paginacion/Paginacion';
-import { MOCK_ALERTAS, MOCK_RESUMEN_ALERTAS } from '../../services/mock-data';
-import { AlertaActiva } from '../../shared/models';
+import { getAlertas } from '../../services/api/client';
+import { MOCK_ALERTAS } from '../../services/mock-data';
+import { AlertaActiva, Ingreso, ResumenAlertas } from '../../shared/models';
+
+function mapIngresoToAlerta(ingreso: Ingreso): AlertaActiva {
+  const estado =
+    ingreso.poliza === 'Póliza Inválida'
+      ? 'invalida'
+      : ingreso.estado === 'Pendiente'
+        ? 'en-validacion'
+        : 'notificada';
+
+  return {
+    id: ingreso.id,
+    paciente: ingreso.paciente,
+    motivoIngreso: ingreso.motivo,
+    polizaNumero: `POL-${ingreso.paciente.id}`,
+    polizaPlan: 'Plan estándar',
+    estado,
+    estadoSubtexto:
+      estado === 'invalida'
+        ? 'No cubierta'
+        : estado === 'en-validacion'
+          ? 'Pendiente de revisión'
+          : 'En proceso',
+    horaIngreso: new Date(),
+    horaIngresoTexto: ingreso.horaIngreso
+  };
+}
+
+function resumir(alertas: AlertaActiva[]): ResumenAlertas {
+  return {
+    total: alertas.length,
+    enValidacion: alertas.filter((a) => a.estado === 'en-validacion').length,
+    invalidas: alertas.filter((a) => a.estado === 'invalida').length,
+    notificadas: alertas.filter((a) => a.estado === 'notificada').length
+  };
+}
 
 export default function AlertasPagina() {
-  const [resumen, setResumen] = useState(MOCK_RESUMEN_ALERTAS);
-  const [alertas, setAlertas] = useState<AlertaActiva[]>(MOCK_ALERTAS);
-  const [cargando, setCargando] = useState(false);
+  const [alertasFuente, setAlertasFuente] = useState<AlertaActiva[]>(MOCK_ALERTAS);
+  const [apiDisponible, setApiDisponible] = useState(true);
+  const [cargando, setCargando] = useState(true);
   const [paginaActual, setPaginaActual] = useState(1);
   const [filasPorPagina, setFilasPorPagina] = useState(10);
   const [estadoFiltro, setEstadoFiltro] = useState<string | null>(null);
 
-  const cargarAlertas = useCallback(() => {
-    // In a real app, this would call a service with state params
-    console.log('Cargando alertas con estado:', estadoFiltro);
-    
-    // Simulate filtering
-    const filtered = MOCK_ALERTAS.filter(a => !estadoFiltro || a.estado === estadoFiltro);
-    setAlertas(filtered);
-  }, [estadoFiltro]);
+  const cargarAlertas = useCallback(async () => {
+    try {
+      const ingresos = await getAlertas();
+      const mapped = ingresos.map(mapIngresoToAlerta);
+      setAlertasFuente(mapped);
+      setApiDisponible(true);
+    } catch {
+      setApiDisponible(false);
+      setAlertasFuente(MOCK_ALERTAS);
+    } finally {
+      setCargando(false);
+    }
+  }, []);
 
   useEffect(() => {
-    cargarAlertas();
-    // Faster polling for alerts (15s)
-    const interval = setInterval(cargarAlertas, 15000);
+    void cargarAlertas();
+    const interval = setInterval(() => {
+      void cargarAlertas();
+    }, 15000);
     return () => clearInterval(interval);
   }, [cargarAlertas]);
+
+  const alertas = alertasFuente.filter((a) => !estadoFiltro || a.estado === estadoFiltro);
+  const resumen = resumir(alertasFuente);
 
   return (
     <MainLayout>
       <div className="flex flex-col gap-8">
-        {/* Header and Controls */}
         <div className="flex justify-between items-start">
           <div className="space-y-1">
             <h1 className="text-3xl font-bold text-[#111827]">Alertas Activas</h1>
-            <p className="text-[#6B7280] text-sm">Pacientes que requieren atención inmediata.</p>
+            <p className="text-[#6B7280] text-sm">
+              Pacientes que requieren atención inmediata. Fuente: {apiDisponible ? 'API' : 'respaldo local'}.
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <FiltroEstadoDropdown onEstadoSeleccionado={setEstadoFiltro} />
@@ -49,43 +95,41 @@ export default function AlertasPagina() {
           </div>
         </div>
 
-        {/* Metrics Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <MetricAlertaCard 
-            label="Total de Alertas Activas" 
-            valor={resumen.total} 
-            subtexto="Requieren atención inmediata"
+          <MetricAlertaCard
+            label="Total de Alertas Activas"
+            valor={resumen.total}
+            subtexto={cargando ? 'Sincronizando...' : 'Requieren atención inmediata'}
             tipo="total"
           />
-          <MetricAlertaCard 
-            label="En Validación" 
-            valor={resumen.enValidacion} 
+          <MetricAlertaCard
+            label="En Validación"
+            valor={resumen.enValidacion}
             subtexto="Esperando respuesta"
             tipo="en-validacion"
           />
-          <MetricAlertaCard 
-            label="Pólizas Inválidas" 
-            valor={resumen.invalidas} 
+          <MetricAlertaCard
+            label="Pólizas Inválidas"
+            valor={resumen.invalidas}
             subtexto="No cubiertas por seguro"
             tipo="invalida"
           />
-          <MetricAlertaCard 
-            label="Notificadas" 
-            valor={resumen.notificadas} 
+          <MetricAlertaCard
+            label="Notificadas"
+            valor={resumen.notificadas}
             subtexto="Gestor en camino"
             tipo="notificada"
           />
         </div>
 
-        {/* Table Section */}
         <div className="flex flex-col">
-          <TablaAlertas 
-            alertas={alertas} 
+          <TablaAlertas
+            alertas={alertas}
             cargando={cargando}
             onVerDetalles={(a) => console.log('Ver alerta:', a)}
             onAccionContextual={(a, acc) => console.log('Accion:', acc, a)}
           />
-          <Paginacion 
+          <Paginacion
             paginaActual={paginaActual}
             totalItems={alertas.length}
             filasPorPagina={filasPorPagina}
