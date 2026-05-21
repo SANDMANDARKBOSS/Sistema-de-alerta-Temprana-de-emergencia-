@@ -30,3 +30,53 @@ export async function crearIngreso(payload: { cedula: string; hospital: string }
 
   return resp.json();
 }
+
+export interface PolizaApiItem {
+  polizaId: string;
+  cedulaAsegurado: string;
+  estado: string;
+  cobertura: string;
+  preExistencias?: string | null;
+  gestorAsignado?: string | null;
+  fechaInicio: string;
+  fechaFin: string;
+  asegurado?: {
+    nombre: string;
+    cedula: string;
+  } | null;
+}
+
+export interface CasoHistoricoApiItem {
+  id: string;
+  nombre: string;
+  cedulaPaciente: string;
+  polizaId: string;
+  fechaIngreso: string;
+  estadoPoliza: string;
+  preExistencias?: string | null;
+  notificacionEnviada: boolean;
+  gestorAsignado?: string | null;
+  hospital: string;
+  asegurado?: {
+    nombre: string;
+    cedula: string;
+  } | null;
+}
+
+export async function getPolizas(): Promise<PolizaApiItem[]> {
+  const resp = await fetch(`${API_URL}/api/polizas`, { cache: 'no-store' });
+  if (!resp.ok) {
+    throw new Error('No fue posible cargar pólizas');
+  }
+  const data = (await resp.json()) as { polizas: PolizaApiItem[] };
+  return data.polizas ?? [];
+}
+
+export async function getHistorialCasos(): Promise<CasoHistoricoApiItem[]> {
+  const resp = await fetch(`${API_URL}/api/historial-casos`, { cache: 'no-store' });
+  if (!resp.ok) {
+    throw new Error('No fue posible cargar historial');
+  }
+  const data = (await resp.json()) as { casos: CasoHistoricoApiItem[] };
+  return data.casos ?? [];
+}

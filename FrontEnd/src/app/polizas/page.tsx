@@ -1,126 +1,77 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
 import { MetricCard } from '../../components/metric-card/MetricCard';
-import { TabsPolizas } from '../../components/tabs-polizas/TabsPolizas';
-import { TablaPolizas } from '../../components/tabla-polizas/TablaPolizas';
-import { Paginacion } from '../../components/paginacion/Paginacion';
-import { BuscadorPaciente } from '../../components/buscador-paciente/BuscadorPaciente';
-import { BotonFiltros } from '../../components/boton-filtros/BotonFiltros';
-import { MOCK_POLIZAS } from '../../services/mock-data';
-import { PolizaCompleta } from '../../shared/models';
+import { getPolizas, PolizaApiItem } from '../../services/api/client';
 
-export default function PolizasPagina() {
-  const [polizas, setPolizas] = useState<PolizaCompleta[]>(MOCK_POLIZAS);
-  const [cargando, setCargando] = useState(false);
-  const [paginaActual, setPaginaActual] = useState(1);
-  const [filasPorPagina, setFilasPorPagina] = useState(10);
-  const [tabActivo, setTabActivo] = useState<'todas' | 'validadas' | 'en-validacion' | 'invalidas'>('todas');
-  const [busqueda, setBusqueda] = useState('');
-
-  const sparklineData = [15, 18, 17, 22, 20, 24].map(v => ({ value: v }));
-
-  const filtrarPolizas = useCallback(() => {
-    setCargando(true);
-    setTimeout(() => {
-      let filtered = [...MOCK_POLIZAS];
-
-      if (tabActivo !== 'todas') {
-        const estadoMap = {
-          'validadas': 'valida',
-          'en-validacion': 'en-validacion',
-          'invalidas': 'invalida'
-        };
-        filtered = filtered.filter(p => p.estado === estadoMap[tabActivo as keyof typeof estadoMap]);
-      }
-
-      if (busqueda) {
-        filtered = filtered.filter(p => 
-          p.paciente.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
-          p.numeroPoliza.toLowerCase().includes(busqueda.toLowerCase())
-        );
-      }
-
-      setPolizas(filtered);
-      setCargando(false);
-    }, 300);
-  }, [tabActivo, busqueda]);
+export default function PolizasPage() {
+  const [polizas, setPolizas] = useState<PolizaApiItem[]>([]);
+  const [cargando, setCargando] = useState(true);
 
   useEffect(() => {
-    filtrarPolizas();
-  }, [filtrarPolizas]);
+    let activo = true;
+
+    const cargar = async () => {
+      try {
+        const data = await getPolizas();
+        if (activo) setPolizas(data);
+      } finally {
+        if (activo) setCargando(false);
+      }
+    };
+
+    void cargar();
+  }, []);
+
+  const vigentes = polizas.filter((p) => p.estado === 'VIGENTE').length;
+  const vencidas = polizas.filter((p) => p.estado === 'VENCIDA').length;
+  const suspendidas = polizas.filter((p) => p.estado === 'SUSPENDIDA').length;
 
   return (
     <MainLayout>
       <div className="flex flex-col gap-8">
-        <div className="flex justify-between items-start">
-          <div className="space-y-1">
-            <h1 className="text-3xl font-bold text-[#111827]">Pólizas y Validaciones</h1>
-            <p className="text-[#6B7280] text-sm">Consulta y seguimiento de pólizas de seguros en tiempo real.</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <BuscadorPaciente onBusquedaCambiada={setBusqueda} />
-            <BotonFiltros onFiltrosAbiertos={() => console.log('Filtros')} />
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold text-[#111827]">Pólizas y Validaciones</h1>
+          <p className="text-[#6B7280] text-sm">Consulta de pólizas registradas y su estado actual.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <MetricCard 
-            titulo="Pólizas Validadas Hoy" 
-            valor="42" 
-            subtexto="+18% vs ayer" 
-            subtextoColor="verde"
-            colorValor="#10B981"
-            sparklineColor="#10B981"
-            sparklineData={sparklineData}
-          />
-          <MetricCard 
-            titulo="En Validación" 
-            valor="8" 
-            subtexto="Revisión en curso" 
-            subtextoColor="gris"
-            colorValor="#F59E0B"
-            sparklineColor="#F59E0B"
-            sparklineData={sparklineData.map(d => ({ value: d.value / 2 }))}
-          />
-          <MetricCard 
-            titulo="Pólizas Inválidas" 
-            valor="3" 
-            subtexto="Sin cobertura activa" 
-            subtextoColor="rojo"
-            colorValor="#EF4444"
-            sparklineColor="#EF4444"
-            sparklineData={sparklineData.map(d => ({ value: d.value / 4 }))}
-          />
-          <MetricCard 
-            titulo="Tasa de Validación" 
-            valor="95" 
-            unidad="%"
-            subtexto="Eficiencia del sistema" 
-            subtextoColor="verde"
-            colorValor="#1565C0"
-            sparklineColor="#3B82F6"
-            sparklineData={[80, 85, 90, 88, 92, 95].map(v => ({ value: v }))}
-          />
+          <MetricCard titulo="Total Pólizas" valor={String(polizas.length)} subtexto={cargando ? 'Cargando...' : 'Registros activos'} subtextoColor="gris" />
+          <MetricCard titulo="Vigentes" valor={String(vigentes)} subtexto="Cobertura disponible" subtextoColor="verde" />
+          <MetricCard titulo="Vencidas" valor={String(vencidas)} subtexto="Requieren renovación" subtextoColor="rojo" />
+          <MetricCard titulo="Suspendidas" valor={String(suspendidas)} subtexto="Revisión pendiente" subtextoColor="rojo" />
         </div>
 
-        <div className="flex flex-col">
-          <TabsPolizas tabActivo={tabActivo} onTabCambiado={setTabActivo} />
-          <div className="card-tabla">
-            <TablaPolizas 
-              polizas={polizas} 
-              cargando={cargando}
-              onVerDetalles={(p) => console.log('Detalle', p)}
-              onAccionContextual={(p, a) => console.log(a, p)}
-            />
-            <Paginacion 
-              paginaActual={paginaActual}
-              totalItems={polizas.length}
-              filasPorPagina={filasPorPagina}
-              onPaginaCambiada={setPaginaActual}
-              onFilasPorPaginaCambiadas={setFilasPorPagina}
-            />
+        <div className="bg-white rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="bg-gray-50 text-[#6B7280] text-[10px] font-bold uppercase tracking-wider">
+                  <th className="px-6 py-4">Póliza</th>
+                  <th className="px-6 py-4">Asegurado</th>
+                  <th className="px-6 py-4">Estado</th>
+                  <th className="px-6 py-4">Cobertura</th>
+                  <th className="px-6 py-4">Vigencia</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {polizas.length === 0 && !cargando && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-10 text-center text-sm text-[#6B7280]">No hay pólizas registradas.</td>
+                  </tr>
+                )}
+                {polizas.map((p) => (
+                  <tr key={p.polizaId} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 text-sm font-bold text-[#111827]">{p.polizaId}</td>
+                    <td className="px-6 py-4 text-sm text-[#111827]">{p.asegurado?.nombre ?? p.cedulaAsegurado}</td>
+                    <td className="px-6 py-4 text-sm text-[#111827]">{p.estado}</td>
+                    <td className="px-6 py-4 text-sm text-[#111827]">{p.cobertura}</td>
+                    <td className="px-6 py-4 text-sm text-[#111827]">{new Date(p.fechaInicio).toLocaleDateString('es-CO')} - {new Date(p.fechaFin).toLocaleDateString('es-CO')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

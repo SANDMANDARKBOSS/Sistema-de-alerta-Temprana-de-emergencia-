@@ -107,4 +107,28 @@ router.get('/polizas/:id', async (req, res) => {
   res.json(poliza);
 });
 
+router.get('/polizas', async (_, res) => {
+  const polizas = await prisma.poliza.findMany({
+    include: {
+      asegurado: true
+    },
+    orderBy: { actualizadoEn: 'desc' },
+    take: 100
+  });
+
+  res.json({ polizas });
+});
+
+router.get('/historial-casos', async (_, res) => {
+  const casos = await prisma.alerta.findMany({
+    include: {
+      asegurado: true
+    },
+    orderBy: { fechaIngreso: 'desc' },
+    take: 200
+  });
+
+  res.json({ casos });
+});
+
 export default router;
