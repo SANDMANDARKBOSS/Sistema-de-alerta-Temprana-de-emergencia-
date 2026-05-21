@@ -151,8 +151,6 @@ export interface ResumenHistorial {
   sparklineTiempo: number[];
 }
 
-// --- NUEVOS MODELOS REPORTES ---
-
 export interface ReporteResumen {
   metricas: {
     totalIngresos: number;
@@ -190,8 +188,6 @@ export interface LineDataset {
   color: string;
 }
 
-// --- NUEVOS MODELOS GESTORES ---
-
 export interface Gestor {
   id: string;
   nombre: string;
@@ -212,4 +208,20 @@ export interface NotificacionGestor {
   mensaje: string;
   enviadoPor: string;
   estado: 'Leído' | 'Pendiente' | 'Enviado';
+}
+
+// --- NUEVOS MODELOS CONFIGURACIÓN SIMPLIFICADA ---
+
+export interface ConfiguracionSistema {
+  registrosPorPagina: number;
+  formatoFecha: 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD';
+  formatoHora: '12h' | '24h';
+  institucion: {
+    nombre: string;
+    direccion: string;
+    telefono: string;
+    correo: string;
+  };
+  validacionAutomatica: boolean;
+  cierreAutomaticoCasos: boolean;
 }
