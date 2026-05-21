@@ -1,4 +1,5 @@
-// src/shared/models/ingreso.model.ts
+// src/shared/models/index.ts
+
 export interface Ingreso {
   id: string;
   paciente: {
@@ -19,7 +20,6 @@ export interface IngresoCompleto extends Ingreso {
   estadoSubtexto: string;   // "Notificado" | "Pendiente" | "No cubierta"
 }
 
-// src/shared/models/notificacion.model.ts
 export interface Notificacion {
   tipo: 'validada' | 'en-proceso' | 'invalida' | 'enviada';
   descripcion: string;
@@ -27,7 +27,6 @@ export interface Notificacion {
   hora: string;
 }
 
-// src/shared/models/resumen.model.ts
 export interface ResumenIngresos {
   total: number;
   cambioVsAyer: string; // "+12%"
@@ -55,4 +54,30 @@ export interface ResumenMetricas {
   sparklineValidadas: number[];
   sparklineValidacion: number[];
   sparklineInvalidas: number[];
+}
+
+export type EstadoAlerta = 'en-validacion' | 'invalida' | 'notificada';
+
+export interface AlertaActiva {
+  id: string;
+  paciente: {
+    nombre: string;
+    id: string;
+    avatar?: string;
+  };
+  motivoIngreso: string;
+  polizaNumero: string;       // "POL-87654321"
+  polizaPlan: string;         // "Vida Salud"
+  estado: EstadoAlerta;
+  estadoSubtexto: string;     // "Pendiente de revisión" | "No cubierta" | "En proceso"
+  horaIngreso: Date;          // Para calcular el cronómetro
+  horaIngresoTexto: string;   // "09:23 AM" (para mostrar)
+  tiempoTranscurrido?: string; // "00:18:45" — calculado dinámicamente
+}
+
+export interface ResumenAlertas {
+  total: number;
+  enValidacion: number;
+  invalidas: number;
+  notificadas: number;
 }
