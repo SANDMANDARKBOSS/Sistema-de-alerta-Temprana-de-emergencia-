@@ -71,7 +71,7 @@ export async function procesarIngresoEmergencia(payload: IngresoPayload): Promis
     preExistencias: poliza.preExistencias,
     resumenIA,
     gestorEmail: poliza.gestorEmail
-  }).catch(() => false);
+  });
 
   const notionSyncId = await crearAlertaEnNotion({
     nombre: alerta.nombre,
@@ -84,6 +84,10 @@ export async function procesarIngresoEmergencia(payload: IngresoPayload): Promis
     gestorAsignado: alerta.gestorAsignado,
     hospital: alerta.hospital
   });
+
+  if (!notionSyncId) {
+    console.warn(`[Webhook] La alerta ${alerta.id} no pudo sincronizarse con Notion.`);
+  }
 
   alerta = await prisma.alerta.update({
     where: { id: alerta.id },

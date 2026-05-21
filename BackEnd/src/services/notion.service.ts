@@ -20,6 +20,7 @@ function mapEstado(estado: 'VIGENTE' | 'VENCIDA' | 'SUSPENDIDA') {
 
 export async function crearAlertaEnNotion(data: NotionAlertaInput): Promise<string | null> {
   if (!env.notionToken || !env.notionAlertasDbId) {
+    console.warn('[NotionService] NOTION_TOKEN o NOTION_ALERTAS_DB_ID no configurados.');
     return null;
   }
 
@@ -48,12 +49,19 @@ export async function crearAlertaEnNotion(data: NotionAlertaInput): Promise<stri
     });
 
     if (!resp.ok) {
+      const errorBody = await resp.json().catch(() => ({}));
+      console.error('[NotionService] Error al crear página en Notion:', {
+        status: resp.status,
+        statusText: resp.statusText,
+        errorBody
+      });
       return null;
     }
 
     const json = (await resp.json()) as any;
     return json?.id ?? null;
-  } catch {
+  } catch (error) {
+    console.error('[NotionService] Error inesperado:', error);
     return null;
   }
 }

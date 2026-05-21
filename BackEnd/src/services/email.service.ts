@@ -14,6 +14,7 @@ interface NotificacionEmailInput {
 
 function getTransporter() {
   if (!env.emailRemitente || !env.emailPassword) {
+    console.warn('[EmailService] SMTP_USER o SMTP_PASSWORD no configurados en .env. El envío de emails estará deshabilitado.');
     return null;
   }
 
@@ -39,6 +40,7 @@ export async function enviarNotificacionesSimultaneas(input: NotificacionEmailIn
 
   const destinos = [hospitalEmail, gestorEmail].filter((email): email is string => Boolean(email));
   if (destinos.length === 0) {
+    console.warn('[EmailService] No se encontraron destinatarios (hospital o gestor).');
     return false;
   }
 
@@ -52,16 +54,20 @@ export async function enviarNotificacionesSimultaneas(input: NotificacionEmailIn
     <p><strong>Análisis IA:</strong> ${input.resumenIA ?? 'No disponible'}</p>
   `;
 
-  await Promise.all(
-    destinos.map((to) =>
-      transporter.sendMail({
-        from: env.emailRemitente,
-        to,
-        subject,
-        html
-      })
-    )
-  );
-
-  return true;
+  try {
+    await Promise.all(
+      destinos.map((to) =>
+        transporter.sendMail({
+          from: env.emailRemitente,
+          to,
+          subject,
+          html
+        })
+      )
+    );
+    return true;
+  } catch (error) {
+    console.error('[EmailService] Error al enviar correos:', error);
+    return false;
+  }
 }
