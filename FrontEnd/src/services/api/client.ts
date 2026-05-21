@@ -80,3 +80,57 @@ export async function getHistorialCasos(): Promise<CasoHistoricoApiItem[]> {
   const data = (await resp.json()) as { casos: CasoHistoricoApiItem[] };
   return data.casos ?? [];
 }
+
+export interface ReporteDiarioApiItem {
+  fecha: string;
+  ingresos: number;
+  validadas: number;
+  enValidacion: number;
+  invalidas: number;
+  alertas: number;
+  tiempo: string;
+}
+
+export async function getReporteDiario(params?: { from?: string; to?: string }): Promise<ReporteDiarioApiItem[]> {
+  const query = new URLSearchParams();
+  if (params?.from) query.set('from', params.from);
+  if (params?.to) query.set('to', params.to);
+
+  const resp = await fetch(`${API_URL}/api/reportes/diario?${query.toString()}`, { cache: 'no-store' });
+  if (!resp.ok) {
+    throw new Error('No fue posible cargar reporte');
+  }
+  const data = (await resp.json()) as { resumenDiario: ReporteDiarioApiItem[] };
+  return data.resumenDiario ?? [];
+}
+
+export interface GestorApiItem {
+  id: string;
+  nombre: string;
+  rol: string;
+  correo: string;
+  area: string;
+  estado: 'Activo' | 'Inactivo';
+  ultimoAcceso: { fecha: string; hora: string };
+  avatar?: string | null;
+}
+
+export interface NotificacionGestorApiItem {
+  fechaHora: string;
+  paciente: { nombre: string; id: string };
+  tipo: string;
+  tipoColor: 'rojo' | 'naranja' | 'azul' | 'verde';
+  canal: 'Sistema' | 'Email' | 'SMS';
+  mensaje: string;
+  enviadoPor: string;
+  estado: 'Leído' | 'Pendiente' | 'Enviado';
+}
+
+export async function getGestoresData(): Promise<{ gestores: GestorApiItem[]; notificaciones: NotificacionGestorApiItem[] }> {
+  const resp = await fetch(`${API_URL}/api/gestores`, { cache: 'no-store' });
+  if (!resp.ok) {
+    throw new Error('No fue posible cargar gestores');
+  }
+  const data = (await resp.json()) as { gestores: GestorApiItem[]; notificaciones: NotificacionGestorApiItem[] };
+  return { gestores: data.gestores ?? [], notificaciones: data.notificaciones ?? [] };
+}

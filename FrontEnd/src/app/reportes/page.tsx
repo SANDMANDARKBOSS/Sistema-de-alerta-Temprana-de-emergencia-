@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
 import { MetricCard } from '../../components/metric-card/MetricCard';
 import { LineaChart } from '../../components/linea-chart/LineaChart';
@@ -10,6 +10,7 @@ import { FiltroRangoFecha } from '../../components/filtro-rango-fecha/FiltroRang
 import { Download } from 'lucide-react';
 import { MOCK_REPORTE_DIARIO } from '../../services/mock-data';
 import { subDays } from 'date-fns';
+import { getReporteDiario, ReporteDiarioApiItem } from '../../services/api/client';
 
 export default function ReportesPagina() {
   const [rango, setRange] = useState({
@@ -19,6 +20,8 @@ export default function ReportesPagina() {
 
   const [paginaActual, setPaginaActual] = useState(1);
   const [filasPorPagina, setFilasPorPagina] = useState(10);
+  const [reporteDiario, setReporteDiario] = useState<ReporteDiarioApiItem[]>(MOCK_REPORTE_DIARIO);
+  const [apiDisponible, setApiDisponible] = useState(true);
 
   const sparklineData = [15, 18, 17, 22, 20, 24].map(v => ({ value: v }));
 
@@ -43,6 +46,38 @@ export default function ReportesPagina() {
     }
   ];
 
+  useEffect(() => {
+    let activo = true;
+    const from = rango.desde.toISOString();
+    const to = rango.hasta.toISOString();
+
+    const cargar = async () => {
+      try {
+        const data = await getReporteDiario({ from, to });
+        if (!activo) return;
+        setReporteDiario(data);
+        setApiDisponible(true);
+      } catch {
+        if (!activo) return;
+        setApiDisponible(false);
+        setReporteDiario(MOCK_REPORTE_DIARIO);
+      }
+    };
+
+    void cargar();
+    return () => {
+      activo = false;
+    };
+  }, [rango.desde, rango.hasta]);
+
+  const metricas = useMemo(() => {
+    const totalIngresos = reporteDiario.reduce((acc, r) => acc + (r.ingresos ?? 0), 0);
+    const polizasValidadas = reporteDiario.reduce((acc, r) => acc + (r.validadas ?? 0), 0);
+    const polizasInvalidas = reporteDiario.reduce((acc, r) => acc + (r.invalidas ?? 0), 0);
+    const alertasGeneradas = reporteDiario.reduce((acc, r) => acc + (r.alertas ?? 0), 0);
+    return { totalIngresos, polizasValidadas, polizasInvalidas, alertasGeneradas };
+  }, [reporteDiario]);
+
   return (
     <MainLayout>
       <div className="flex flex-col gap-8">
@@ -63,8 +98,8 @@ export default function ReportesPagina() {
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
           <MetricCard 
             titulo="Total de Ingresos" 
-            valor="128" 
-            subtexto="+14% vs período anterior" 
+            valor={String(metricas.totalIngresos)} 
+            subtexto={apiDisponible ? 'Datos en vivo' : 'Modo respaldo'} 
             subtextoColor="verde"
             colorValor="#111827"
             sparklineColor="#1565C0"
@@ -72,8 +107,8 @@ export default function ReportesPagina() {
           />
           <MetricCard 
             titulo="Pólizas Validadas" 
-            valor="115" 
-            subtexto="+18% vs período anterior" 
+            valor={String(metricas.polizasValidadas)} 
+            subtexto={apiDisponible ? 'Datos en vivo' : 'Modo respaldo'} 
             subtextoColor="verde"
             colorValor="#4CAF50"
             sparklineColor="#4CAF50"
@@ -81,8 +116,8 @@ export default function ReportesPagina() {
           />
           <MetricCard 
             titulo="Alertas Generadas" 
-            valor="56" 
-            subtexto="-8% vs período anterior" 
+            valor={String(metricas.alertasGeneradas)} 
+            subtexto={apiDisponible ? 'Datos en vivo' : 'Modo respaldo'} 
             subtextoColor="rojo"
             colorValor="#F59E0B"
             sparklineColor="#FFC107"
@@ -90,8 +125,8 @@ export default function ReportesPagina() {
           />
           <MetricCard 
             titulo="Pólizas Inválidas" 
-            valor="7" 
-            subtexto="-12% vs período anterior" 
+            valor={String(metricas.polizasInvalidas)} 
+            subtexto={apiDisponible ? 'Datos en vivo' : 'Modo respaldo'} 
             subtextoColor="verde"
             colorValor="#F44336"
             sparklineColor="#F44336"
@@ -130,8 +165,8 @@ export default function ReportesPagina() {
           <h3 className="text-lg font-bold text-[#111827]">Resumen Diario</h3>
           <TablaPaginada 
             columnas={columnas}
-            datos={MOCK_REPORTE_DIARIO}
-            totalRegistros={7}
+            datos={reporteDiario}
+            totalRegistros={reporteDiario.length}
             paginaActual={paginaActual}
             filasPorPagina={filasPorPagina}
             onPaginaChange={setPaginaActual}
