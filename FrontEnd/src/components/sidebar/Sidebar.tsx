@@ -13,6 +13,8 @@ import {
   LogOut 
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const menuItems = [
   { icon: Home, label: 'Inicio', href: '/dashboard' },
@@ -24,9 +26,6 @@ const menuItems = [
   { icon: Users, label: 'Gestores y Notificaciones', href: '#' },
   { icon: Settings, label: 'Configuración', href: '#' },
 ];
-
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
 export const Sidebar = () => {
   const pathname = usePathname();
