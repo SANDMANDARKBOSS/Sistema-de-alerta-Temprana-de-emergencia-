@@ -1,15 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { MainLayout } from '../../components/layout/MainLayout';
 import { MetricCard } from '../../components/metric-card/MetricCard';
 import { TablaPaginada, ColumnaConfig } from '../../components/tabla-paginada/TablaPaginada';
 import { MOCK_GESTORES, MOCK_NOTIFICACIONES_GESTOR } from '../../services/mock-data';
 import { clsx } from 'clsx';
 import { MoreVertical } from 'lucide-react';
+import { getGestoresData, GestorApiItem, NotificacionGestorApiItem } from '../../services/api/client';
 
 export default function GestoresPagina() {
   const [tabActivo, setTabActivo] = useState<'gestores' | 'notificaciones'>('gestores');
+  const [gestores, setGestores] = useState<GestorApiItem[]>(MOCK_GESTORES);
+  const [notificaciones, setNotificaciones] = useState<NotificacionGestorApiItem[]>(MOCK_NOTIFICACIONES_GESTOR);
+  const [apiDisponible, setApiDisponible] = useState(true);
   
   const [paginaGestores, setPaginaGestores] = useState(1);
   const [filasGestores, setFilasGestores] = useState(10);
@@ -132,18 +136,51 @@ export default function GestoresPagina() {
     }
   ];
 
+  useEffect(() => {
+    let activo = true;
+
+    const cargar = async () => {
+      try {
+        const data = await getGestoresData();
+        if (!activo) return;
+        setGestores(data.gestores.length ? data.gestores : MOCK_GESTORES);
+        setNotificaciones(data.notificaciones.length ? data.notificaciones : MOCK_NOTIFICACIONES_GESTOR);
+        setApiDisponible(true);
+      } catch {
+        if (!activo) return;
+        setApiDisponible(false);
+        setGestores(MOCK_GESTORES);
+        setNotificaciones(MOCK_NOTIFICACIONES_GESTOR);
+      }
+    };
+
+    void cargar();
+    const interval = setInterval(cargar, 15000);
+    return () => {
+      activo = false;
+      clearInterval(interval);
+    };
+  }, []);
+
+  const metricas = useMemo(() => {
+    const gestoresActivos = gestores.filter((g) => g.estado === 'Activo').length;
+    const notificacionesHoy = notificaciones.length;
+    const pendientesLectura = notificaciones.filter((n) => n.estado === 'Pendiente').length;
+    return { gestoresActivos, notificacionesHoy, pendientesLectura };
+  }, [gestores, notificaciones]);
+
   return (
     <MainLayout>
       <div className="flex flex-col gap-8">
         <div>
           <h1 className="text-3xl font-bold text-[#111827]">Gestores y Notificaciones</h1>
-          <p className="text-[#6B7280] text-sm mt-1">Administración de usuarios gestores y registro de comunicaciones del sistema.</p>
+          <p className="text-[#6B7280] text-sm mt-1">Administración de usuarios gestores y registro de comunicaciones del sistema. Fuente: {apiDisponible ? 'API' : 'respaldo'}.</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard 
             titulo="Gestores Activos" 
-            valor="12" 
+            valor={String(metricas.gestoresActivos)} 
             subtexto="Usuarios con acceso al sistema" 
             icono="Users"
             iconoColor="#1565C0"
@@ -151,7 +188,7 @@ export default function GestoresPagina() {
           />
           <MetricCard 
             titulo="Notificaciones Enviadas Hoy" 
-            valor="38" 
+            valor={String(metricas.notificacionesHoy)} 
             subtexto="Total de comunicaciones" 
             icono="Mail"
             iconoColor="#4CAF50"
@@ -159,7 +196,7 @@ export default function GestoresPagina() {
           />
           <MetricCard 
             titulo="Pendientes de Lectura" 
-            valor="5" 
+            valor={String(metricas.pendientesLectura)} 
             subtexto="Requieren atención" 
             icono="Bell"
             iconoColor="#F59E0B"
@@ -204,8 +241,8 @@ export default function GestoresPagina() {
           {tabActivo === 'gestores' ? (
             <TablaPaginada 
               columnas={columnasGestores}
-              datos={MOCK_GESTORES}
-              totalRegistros={12}
+              datos={gestores}
+              totalRegistros={gestores.length}
               paginaActual={paginaGestores}
               filasPorPagina={filasGestores}
               onPaginaChange={setPaginaGestores}
@@ -221,8 +258,8 @@ export default function GestoresPagina() {
               </div>
               <TablaPaginada 
                 columnas={columnasNotificaciones}
-                datos={MOCK_NOTIFICACIONES_GESTOR}
-                totalRegistros={38}
+                datos={notificaciones}
+                totalRegistros={notificaciones.length}
                 paginaActual={1}
                 filasPorPagina={10}
                 onPaginaChange={() => {}}
