@@ -22,8 +22,8 @@ const menuItems = [
   { icon: Bell, label: 'Alertas Activas', href: '/alertas' },
   { icon: FileText, label: 'Pólizas y Validaciones', href: '/polizas' },
   { icon: FolderOpen, label: 'Historial de Casos', href: '/historial' },
-  { icon: BarChart2, label: 'Reportes', href: '#' },
-  { icon: Users, label: 'Gestores y Notificaciones', href: '#' },
+  { icon: BarChart2, label: 'Reportes', href: '/reportes' },
+  { icon: Users, label: 'Gestores y Notificaciones', href: '/gestores' },
   { icon: Settings, label: 'Configuración', href: '#' },
 ];
 

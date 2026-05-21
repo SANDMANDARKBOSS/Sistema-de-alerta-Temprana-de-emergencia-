@@ -5,7 +5,9 @@ import {
   AlertaActiva, 
   ResumenAlertas,
   PolizaCompleta,
-  CasoHistorial
+  CasoHistorial,
+  Gestor,
+  NotificacionGestor
 } from '../shared/models';
 
 export const MOCK_INGRESOS: Ingreso[] = [
@@ -327,23 +329,121 @@ export const MOCK_CASOS: CasoHistorial[] = [
     estado: 'cerrado', estadoSubtexto: 'Póliza válida',
     gestorAsignado: { nombre: 'Laura Martínez' },
     tiempoGestion: '00:05:02'
-  },
-  {
-    id: 'CAS-2024-1282', pacienteId: '78912345',
-    paciente: { nombre: 'Sofía Martínez Rojas', id: '78912345' },
-    fechaIngreso: '24/05/2024', horaIngreso: '09:05 AM',
-    motivoIngreso: 'Fractura de brazo',
-    estado: 'en-proceso', estadoSubtexto: 'Documentos pendientes',
-    gestorAsignado: { nombre: 'Carlos Ramírez' },
-    tiempoGestion: '00:08:47'
-  },
-  {
-    id: 'CAS-2024-1281', pacienteId: '12378945',
-    paciente: { nombre: 'Diego Herrera Ruiz', id: '12378945' },
-    fechaIngreso: '24/05/2024', horaIngreso: '09:02 AM',
-    motivoIngreso: 'Dificultad respiratoria',
-    estado: 'cerrado', estadoSubtexto: 'Póliza válida',
-    gestorAsignado: { nombre: 'Laura Martínez' },
-    tiempoGestion: '00:04:19'
   }
+];
+
+export const MOCK_GESTORES: Gestor[] = [
+  {
+    id: 'GEST-001',
+    nombre: 'Laura Martínez',
+    rol: 'Gestor de Casos',
+    correo: 'laura.martinez@hospitalcentral.com',
+    area: 'Gestión de Casos',
+    estado: 'Activo',
+    ultimoAcceso: { fecha: '24/05/2024', hora: '09:35 AM' },
+    avatar: null
+  },
+  {
+    id: 'GEST-002',
+    nombre: 'Carlos Ramírez',
+    rol: 'Coordinador Médico',
+    correo: 'carlos.ramirez@hospitalcentral.com',
+    area: 'Coordinación Médica',
+    estado: 'Activo',
+    ultimoAcceso: { fecha: '24/05/2024', hora: '09:12 AM' },
+    avatar: null
+  },
+  {
+    id: 'GEST-003',
+    nombre: 'María López',
+    rol: 'Analista de Validaciones',
+    correo: 'maria.lopez@hospitalcentral.com',
+    area: 'Validaciones',
+    estado: 'Activo',
+    ultimoAcceso: { fecha: '24/05/2024', hora: '08:58 AM' },
+    avatar: null
+  },
+  {
+    id: 'GEST-004',
+    nombre: 'Diego Herrera',
+    rol: 'Gestor de Casos',
+    correo: 'diego.herrera@hospitalcentral.com',
+    area: 'Gestión de Casos',
+    estado: 'Activo',
+    ultimoAcceso: { fecha: '24/05/2024', hora: '08:41 AM' },
+    avatar: null
+  },
+  {
+    id: 'GEST-005',
+    nombre: 'Sofía Martínez',
+    rol: 'Administradora del Sistema',
+    correo: 'sofia.martinez@hospitalcentral.com',
+    area: 'Administración',
+    estado: 'Activo',
+    ultimoAcceso: { fecha: '24/05/2024', hora: '08:20 AM' },
+    avatar: null
+  }
+];
+
+export const MOCK_NOTIFICACIONES_GESTOR: NotificacionGestor[] = [
+  {
+    fechaHora: '24/05/2024 09:35 AM',
+    paciente: { nombre: 'Juan Pérez Gómez', id: '78945612' },
+    tipo: 'Alerta de Ingreso',
+    tipoColor: 'rojo',
+    canal: 'Sistema',
+    mensaje: 'Ingreso a emergencia detectado',
+    enviadoPor: 'Laura Martínez',
+    estado: 'Leído'
+  },
+  {
+    fechaHora: '24/05/2024 09:28 AM',
+    paciente: { nombre: 'María López Silva', id: '45678923' },
+    tipo: 'Validación de Póliza',
+    tipoColor: 'naranja',
+    canal: 'Email',
+    mensaje: 'Póliza en validación',
+    enviadoPor: 'Carlos Ramírez',
+    estado: 'Pendiente'
+  },
+  {
+    fechaHora: '24/05/2024 09:21 AM',
+    paciente: { nombre: 'Carlos Ramírez Torres', id: '32165498' },
+    tipo: 'Póliza Inválida',
+    tipoColor: 'rojo',
+    canal: 'SMS',
+    mensaje: 'Póliza sin cobertura o vencida',
+    enviadoPor: 'Sistema',
+    estado: 'Enviado'
+  },
+  {
+    fechaHora: '24/05/2024 09:15 AM',
+    paciente: { nombre: 'Ana Lucía Fernández', id: '65498731' },
+    tipo: 'Actualización de Caso',
+    tipoColor: 'azul',
+    canal: 'Sistema',
+    mensaje: 'Estado del caso actualizado',
+    enviadoPor: 'María López',
+    estado: 'Leído'
+  },
+  {
+    fechaHora: '24/05/2024 09:10 AM',
+    paciente: { nombre: 'Luis Fernando Castro', id: '98765432' },
+    tipo: 'Revisión Pendiente',
+    tipoColor: 'naranja',
+    canal: 'Email',
+    mensaje: 'Caso pendiente de revisión',
+    enviadoPor: 'Diego Herrera',
+    estado: 'Pendiente'
+  }
+];
+
+export const MOCK_REPORTE_DIARIO = [
+  { fecha: '24/05/2024', ingresos: 24, validadas: 20, enValidacion: 3, invalidas: 1, alertas: 9, tiempo: '05:48 min' },
+  { fecha: '23/05/2024', ingresos: 22, validadas: 19, enValidacion: 4, invalidas: 2, alertas: 8, tiempo: '05:21 min' },
+  { fecha: '22/05/2024', ingresos: 18, validadas: 16, enValidacion: 1, invalidas: 1, alertas: 6, tiempo: '06:18 min' },
+  { fecha: '21/05/2024', ingresos: 28, validadas: 25, enValidacion: 2, invalidas: 1, alertas: 12, tiempo: '05:02 min' },
+  { fecha: '20/05/2024', ingresos: 15, validadas: 13, enValidacion: 1, invalidas: 1, alertas: 5, tiempo: '06:35 min' },
+  { fecha: '19/05/2024', ingresos: 12, validadas: 11, enValidacion: 0, invalidas: 1, alertas: 4, tiempo: '07:10 min' },
+  { fecha: '18/05/2024', ingresos: 9,  validadas: 7,  enValidacion: 1, invalidas: 1, alertas: 3, tiempo: '06:50 min' }
 ];
