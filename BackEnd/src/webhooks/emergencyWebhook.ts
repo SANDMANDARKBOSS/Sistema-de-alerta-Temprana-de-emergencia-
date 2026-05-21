@@ -1,4 +1,4 @@
-import { EstadoPoliza, type Alerta, type Asegurado, type Poliza } from '@prisma/client';
+import type { Alerta, Asegurado, Poliza } from '@prisma/client';
 import { prisma } from '../config/database';
 import { generarResumenIA } from '../services/ai.service';
 import { enviarNotificacionesSimultaneas } from '../services/email.service';
@@ -9,15 +9,17 @@ interface IngresoPayload {
   hospital: string;
 }
 
+type EstadoPoliza = 'VIGENTE' | 'VENCIDA' | 'SUSPENDIDA';
+
 function normalizarEstadoPoliza(poliza: Poliza): EstadoPoliza {
   const now = new Date();
-  if (poliza.estado === EstadoPoliza.SUSPENDIDA) {
-    return EstadoPoliza.SUSPENDIDA;
+  if (poliza.estado === 'SUSPENDIDA') {
+    return 'SUSPENDIDA';
   }
-  if (poliza.fechaFin < now || poliza.estado === EstadoPoliza.VENCIDA) {
-    return EstadoPoliza.VENCIDA;
+  if (poliza.fechaFin < now || poliza.estado === 'VENCIDA') {
+    return 'VENCIDA';
   }
-  return EstadoPoliza.VIGENTE;
+  return 'VIGENTE';
 }
 
 export async function procesarIngresoEmergencia(payload: IngresoPayload): Promise<Alerta & { asegurado: Asegurado; poliza: Poliza }> {

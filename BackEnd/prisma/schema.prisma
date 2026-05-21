@@ -3,14 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
-}
-
-enum EstadoPoliza {
-  VIGENTE
-  VENCIDA
-  SUSPENDIDA
 }
 
 model Asegurado {
@@ -34,7 +28,7 @@ model Poliza {
   cedulaAsegurado    String
   fechaInicio        DateTime
   fechaFin           DateTime
-  estado             EstadoPoliza
+  estado             String
   cobertura          String
   preExistencias     String?
   gestorAsignado     String?
@@ -51,7 +45,7 @@ model Alerta {
   cedulaPaciente        String
   polizaId              String
   fechaIngreso          DateTime     @default(now())
-  estadoPoliza          EstadoPoliza
+  estadoPoliza          String
   preExistencias        String?
   notificacionEnviada   Boolean      @default(false)
   gestorAsignado        String?
