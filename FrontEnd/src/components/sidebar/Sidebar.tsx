@@ -13,20 +13,19 @@ import {
   LogOut 
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 const menuItems = [
   { icon: Home, label: 'Inicio', href: '/dashboard' },
   { icon: TrendingUp, label: 'Ingresos en Tiempo Real', href: '/ingresos' },
-  { icon: Bell, label: 'Alertas Activas', href: '#' },
+  { icon: Bell, label: 'Alertas Activas', href: '/alertas' },
   { icon: FileText, label: 'Pólizas y Validaciones', href: '#' },
   { icon: FolderOpen, label: 'Historial de Casos', href: '#' },
   { icon: BarChart2, label: 'Reportes', href: '#' },
   { icon: Users, label: 'Gestores y Notificaciones', href: '#' },
   { icon: Settings, label: 'Configuración', href: '#' },
 ];
-
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
 
 export const Sidebar = () => {
   const pathname = usePathname();
