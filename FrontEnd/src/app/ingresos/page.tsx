@@ -80,8 +80,8 @@ function ModalDetalles({ ingreso, onClose }: { ingreso: IngresoCompleto, onClose
               </div>
               <div className="flex items-center gap-2">
                 <div className={`w-3 h-3 rounded-full ${
-                  ingreso.poliza === 'Póliza Válida' || ingreso.poliza === 'VIGENTE' ? 'bg-green-500' : 
-                  ingreso.poliza === 'Póliza Inválida' || ingreso.poliza === 'VENCIDA' || ingreso.poliza === 'SUSPENDIDA' ? 'bg-red-500' : 'bg-amber-500'
+                  ingreso.poliza === 'Póliza Válida' ? 'bg-green-500' : 
+                  ingreso.poliza === 'Póliza Inválida' ? 'bg-red-500' : 'bg-amber-500'
                 }`}></div>
                 <span className="font-bold text-[#111827]">{ingreso.poliza}</span>
               </div>
@@ -281,12 +281,12 @@ export default function IngresosPagina() {
     paciente: { id: alerta.cedulaPaciente, nombre: alerta.nombre || alerta.paciente || 'Paciente' },
     motivo: alerta.hospital,
     fecha: new Date(alerta.fechaIngreso).toLocaleTimeString('es-CO', { hour: '2-digit', minute:'2-digit', hour12: true }) + ' ' + new Date(alerta.fechaIngreso).toLocaleDateString('es-CO'),
-    poliza: alerta.estadoPoliza,
+    poliza: alerta.estadoPoliza === 'VIGENTE' ? 'Póliza Válida' : alerta.estadoPoliza === 'VENCIDA' ? 'Póliza Inválida' : 'En Validación',
     polizaNumero: alerta.polizaId,
-    prioridad: alerta.estadoPoliza === 'VIGENTE' ? 'Baja' : 'Alta',
-    estado: alerta.estadoPoliza === 'VIGENTE' ? 'Validada' : 'Requiere Revisión',
+    estado: alerta.notificacionEnviada ? 'Notificado' : 'Pendiente',
     estadoSubtexto: alerta.analisis?.resumen || alerta.preExistencias || 'Sin análisis IA disponible',
-    tiempoEspera: '0 min'
+    horaIngreso: new Date(alerta.fechaIngreso).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
+    polizaPlan: 'Cobertura Integral'
   });
 
   const cargarDatos = useCallback(async () => {
@@ -344,8 +344,8 @@ export default function IngresosPagina() {
   const stats = useMemo(() => {
     const data = Array.isArray(ingresosApi) ? ingresosApi : [];
     const total = data.length;
-    const validadas = data.filter(i => i.poliza === 'VIGENTE').length;
-    const invalidas = data.filter(i => i.poliza === 'VENCIDA' || i.poliza === 'SUSPENDIDA').length;
+    const validadas = data.filter(i => i.poliza === 'Póliza Válida').length;
+    const invalidas = data.filter(i => i.poliza === 'Póliza Inválida').length;
     const enValidacion = total - validadas - invalidas;
     return { total, validadas, enValidacion, invalidas };
   }, [ingresosApi]);
@@ -433,8 +433,8 @@ export default function IngresosPagina() {
                         <td className="px-6 py-4">
                           <div className="font-bold text-[#111827]">{ingreso.polizaNumero}</div>
                           <div className={`text-[10px] font-bold px-2 py-0.5 rounded-full inline-block mt-1 ${
-                            ingreso.poliza === 'VIGENTE' ? 'bg-green-100 text-green-700' :
-                            ingreso.poliza === 'VENCIDA' || ingreso.poliza === 'SUSPENDIDA' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
+                            ingreso.poliza === 'Póliza Válida' ? 'bg-green-100 text-green-700' :
+                            ingreso.poliza === 'Póliza Inválida' ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-700'
                           }`}>
                             {ingreso.poliza}
                           </div>

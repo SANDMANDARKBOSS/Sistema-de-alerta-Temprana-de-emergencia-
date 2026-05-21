@@ -1,7 +1,7 @@
 'use client';
 
 import React, { memo, useEffect, useRef } from 'react';
-import * as anime from 'animejs';
+import anime from 'animejs';
 import { clsx } from 'clsx';
 import { AlertTriangle, Clock, ShieldCheck, Zap } from 'lucide-react';
 
@@ -19,27 +19,16 @@ export const MetricAlertaCard: React.FC<MetricAlertaCardProps> = memo(({ label, 
   useEffect(() => {
     if (isNumber && countRef.current) {
       const numValue = Number(valor);
-      
-      if (typeof anime === 'function') {
-        anime({
-          targets: countRef.current,
-          innerHTML: [0, numValue],
-          easing: 'easeOutExpo',
-          duration: 1500,
-          round: 1,
-        });
-      } else if ((anime as any)?.default) {
-        (anime as any).default({
-          targets: countRef.current,
-          innerHTML: [0, numValue],
-          easing: 'easeOutExpo',
-          duration: 1500,
-          round: 1,
-        });
-      }
+
+      anime({
+        targets: countRef.current,
+        innerHTML: [0, numValue],
+        easing: 'easeOutExpo',
+        duration: 1500,
+        round: 1,
+      });
     }
   }, [valor, isNumber]);
-
   const styles = {
     'total': {
       bg: 'bg-blue-50',

@@ -54,7 +54,7 @@ export default function DashboardPage() {
     motivo: m.hospital,
     horaIngreso: new Date(m.fechaIngreso).toLocaleTimeString('es-CO', { hour: '2-digit', minute: '2-digit' }),
     poliza: m.estadoPoliza === 'VIGENTE' ? 'Póliza Válida' : m.estadoPoliza === 'VENCIDA' ? 'Póliza Inválida' : 'En Validación',
-    estado: m.notificacionEnviada ? 'Notificada' : 'Pendiente'
+    estado: m.notificacionEnviada ? 'Notificado' : 'Pendiente'
   }));
 
   const notificaciones: Notificacion[] = ingresosRecientes.slice(0, 4).map((ingreso) => ({
