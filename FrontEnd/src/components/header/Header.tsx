@@ -6,9 +6,11 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 export const Header = () => {
-  const [time, setTime] = useState(new Date());
+  const [time, setTime] = useState<Date | null>(null);
 
   useEffect(() => {
+    // Set initial time and start interval only on client
+    setTime(new Date());
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, []);
@@ -19,12 +21,12 @@ export const Header = () => {
         <div className="flex items-center gap-2">
           <Clock size={16} />
           <span className="text-sm font-medium capitalize">
-            {format(time, "eeee, dd 'de' MMMM yyyy", { locale: es })}
+            {time ? format(time, "eeee, dd 'de' MMMM yyyy", { locale: es }) : '---'}
           </span>
         </div>
         <div className="w-px h-4 bg-gray-200"></div>
         <span className="text-sm font-bold text-[#111827]">
-          {format(time, "HH:mm:ss")}
+          {time ? format(time, "HH:mm:ss") : '--:--:--'}
         </span>
       </div>
 
