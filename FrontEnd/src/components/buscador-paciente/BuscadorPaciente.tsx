@@ -5,9 +5,13 @@ import { Search } from 'lucide-react';
 
 interface BuscadorPacienteProps {
   onBusquedaCambiada: (texto: string) => void;
+  placeholder?: string;
 }
 
-export const BuscadorPaciente: React.FC<BuscadorPacienteProps> = ({ onBusquedaCambiada }) => {
+export const BuscadorPaciente: React.FC<BuscadorPacienteProps> = ({ 
+  onBusquedaCambiada,
+  placeholder = "Buscar paciente, ID o póliza..."
+}) => {
   const [query, setQuery] = useState('');
 
   useEffect(() => {
@@ -22,7 +26,7 @@ export const BuscadorPaciente: React.FC<BuscadorPacienteProps> = ({ onBusquedaCa
     <div className="relative flex-1">
       <input
         type="text"
-        placeholder="Buscar paciente, ID o póliza..."
+        placeholder={placeholder}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         className="w-full pl-4 pr-10 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-[#1565C0] transition-colors shadow-sm"
