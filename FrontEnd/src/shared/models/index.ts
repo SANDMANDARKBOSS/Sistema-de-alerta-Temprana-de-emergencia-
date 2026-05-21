@@ -12,6 +12,13 @@ export interface Ingreso {
   horaIngreso: string; // "09:35 AM"
 }
 
+export interface IngresoCompleto extends Ingreso {
+  polizaNumero: string;     // "POL-12345678"
+  polizaPlan: string;       // "Salud Integral"
+  fecha: string;            // "24/05/2024"
+  estadoSubtexto: string;   // "Notificado" | "Pendiente" | "No cubierta"
+}
+
 // src/shared/models/notificacion.model.ts
 export interface Notificacion {
   tipo: 'validada' | 'en-proceso' | 'invalida' | 'enviada';
@@ -33,4 +40,19 @@ export interface ResumenPolizas {
   invalidas: number;
   totalHoy: number;
   porcentajeValidadas: number;
+}
+
+export interface ResumenMetricas {
+  ingresosHoy: number;
+  ingresosChangePercent: string;       // "+12%"
+  polizasValidadas: number;
+  polizasValidadasPercent: string;     // "83%"
+  enValidacion: number;
+  enValidacionPercent: string;         // "12%"
+  invalidas: number;
+  invalidasPercent: string;            // "5%"
+  sparklineIngresos: number[];
+  sparklineValidadas: number[];
+  sparklineValidacion: number[];
+  sparklineInvalidas: number[];
 }

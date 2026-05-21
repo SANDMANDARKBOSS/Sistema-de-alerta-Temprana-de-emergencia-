@@ -15,17 +15,22 @@ import {
 import { clsx } from 'clsx';
 
 const menuItems = [
-  { icon: Home, label: 'Inicio', active: true },
-  { icon: TrendingUp, label: 'Ingresos en Tiempo Real' },
-  { icon: Bell, label: 'Alertas Activas' },
-  { icon: FileText, label: 'Pólizas y Validaciones' },
-  { icon: FolderOpen, label: 'Historial de Casos' },
-  { icon: BarChart2, label: 'Reportes' },
-  { icon: Users, label: 'Gestores y Notificaciones' },
-  { icon: Settings, label: 'Configuración' },
+  { icon: Home, label: 'Inicio', href: '/dashboard' },
+  { icon: TrendingUp, label: 'Ingresos en Tiempo Real', href: '/ingresos' },
+  { icon: Bell, label: 'Alertas Activas', href: '#' },
+  { icon: FileText, label: 'Pólizas y Validaciones', href: '#' },
+  { icon: FolderOpen, label: 'Historial de Casos', href: '#' },
+  { icon: BarChart2, label: 'Reportes', href: '#' },
+  { icon: Users, label: 'Gestores y Notificaciones', href: '#' },
+  { icon: Settings, label: 'Configuración', href: '#' },
 ];
 
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+
 export const Sidebar = () => {
+  const pathname = usePathname();
+
   return (
     <div className="w-[220px] h-screen bg-white border-r border-gray-100 flex flex-col fixed left-0 top-0">
       <div className="p-6">
@@ -45,20 +50,24 @@ export const Sidebar = () => {
         </div>
 
         <nav className="space-y-1">
-          {menuItems.map((item) => (
-            <div
-              key={item.label}
-              className={clsx(
-                "flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors",
-                item.active 
-                  ? "bg-[#E3F2FD] text-[#1565C0]" 
-                  : "text-[#6B7280] hover:bg-gray-50"
-              )}
-            >
-              <item.icon size={18} />
-              <span className="text-sm font-medium">{item.label}</span>
-            </div>
-          ))}
+          {menuItems.map((item) => {
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                className={clsx(
+                  "flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer transition-colors",
+                  isActive 
+                    ? "bg-[#E3F2FD] text-[#1565C0]" 
+                    : "text-[#6B7280] hover:bg-gray-50"
+                )}
+              >
+                <item.icon size={18} />
+                <span className="text-sm font-medium">{item.label}</span>
+              </Link>
+            );
+          })}
         </nav>
       </div>
 
