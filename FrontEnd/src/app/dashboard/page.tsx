@@ -14,18 +14,26 @@ import { Ingreso, Notificacion } from '../../shared/models';
 
 export default function DashboardPage() {
   const [ingresos, setIngresos] = useState<Ingreso[]>(MOCK_INGRESOS);
+  const [cargandoApi, setCargandoApi] = useState(true);
+  const [apiDisponible, setApiDisponible] = useState(true);
 
   useEffect(() => {
     let activo = true;
 
     const cargar = async () => {
       try {
+        setApiDisponible(true);
         const data = await getAlertas();
-        if (activo && data.length > 0) {
+        if (activo) {
           setIngresos(data);
+          setCargandoApi(false);
         }
       } catch {
-        // mantiene mock para no romper UI en caso de caída del backend
+        if (activo) {
+          // mantiene mock para no romper UI en caso de caída del backend
+          setApiDisponible(false);
+          setCargandoApi(false);
+        }
       }
     };
 
@@ -42,16 +50,18 @@ export default function DashboardPage() {
     { value: 18 }, { value: 20 }, { value: 19 }, { value: 22 }, { value: 21 }, { value: 24 }
   ];
 
-  const polizasValidadas = ingresos.filter((i) => i.poliza === 'Póliza Válida').length;
-  const enValidacion = ingresos.filter((i) => i.poliza === 'En Validación').length;
-  const invalidas = ingresos.filter((i) => i.poliza === 'Póliza Inválida').length;
+  const ingresosActivos = apiDisponible ? ingresos : MOCK_INGRESOS;
+
+  const polizasValidadas = ingresosActivos.filter((i) => i.poliza === 'Póliza Válida').length;
+  const enValidacion = ingresosActivos.filter((i) => i.poliza === 'En Validación').length;
+  const invalidas = ingresosActivos.filter((i) => i.poliza === 'Póliza Inválida').length;
 
   const notificaciones: Notificacion[] = useMemo(() => {
-    if (ingresos.length === 0) {
+    if (ingresosActivos.length === 0) {
       return MOCK_NOTIFICACIONES;
     }
 
-    return ingresos.slice(0, 4).map((ingreso) => ({
+    return ingresosActivos.slice(0, 4).map((ingreso) => ({
       tipo:
         ingreso.poliza === 'Póliza Válida'
           ? 'validada'
@@ -67,7 +77,7 @@ export default function DashboardPage() {
       paciente: ingreso.paciente.nombre,
       hora: ingreso.horaIngreso
     }));
-  }, [ingresos]);
+  }, [ingresosActivos]);
 
   return (
     <MainLayout>
@@ -82,7 +92,7 @@ export default function DashboardPage() {
               <AlertTriangle size={18} className="text-[#EF4444]" />
               <div>
                 <p className="text-[10px] text-[#EF4444] font-bold uppercase">Alertas Activas</p>
-                <p className="text-sm font-bold text-[#111827]">{ingresos.length} Emergencias</p>
+                <p className="text-sm font-bold text-[#111827]">{ingresosActivos.length} Emergencias</p>
               </div>
             </div>
             <div className="bg-green-50 px-4 py-2 rounded-lg border border-green-100 flex items-center gap-2">
@@ -98,15 +108,15 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <MetricCard
             titulo="Ingresos Hoy"
-            valor={String(ingresos.length)}
-            subtexto="Actualizado en tiempo real"
+            valor={String(ingresosActivos.length)}
+            subtexto={cargandoApi ? 'Sincronizando...' : 'Actualizado en tiempo real'}
             subtextoColor="verde"
             sparklineData={sparklineData}
           />
           <MetricCard
             titulo="Pólizas Validadas"
             valor={String(polizasValidadas)}
-            subtexto={`${ingresos.length ? Math.round((polizasValidadas / ingresos.length) * 100) : 0}% del total`}
+            subtexto={`${ingresosActivos.length ? Math.round((polizasValidadas / ingresosActivos.length) * 100) : 0}% del total`}
             subtextoColor="verde"
             sparklineData={sparklineData.map((d) => ({ value: d.value - 4 }))}
             sparklineColor="#4CAF50"

@@ -25,6 +25,13 @@ export const IngresoTabla: React.FC<IngresoTablaProps> = ({ ingresos }) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
+            {ingresos.length === 0 && (
+              <tr>
+                <td colSpan={5} className="px-6 py-10 text-center text-sm text-[#6B7280]">
+                  No hay ingresos registrados todavía.
+                </td>
+              </tr>
+            )}
             {ingresos.map((ingreso) => (
               <tr key={ingreso.id} className="hover:bg-gray-50 transition-colors">
                 <td className="px-6 py-4">
