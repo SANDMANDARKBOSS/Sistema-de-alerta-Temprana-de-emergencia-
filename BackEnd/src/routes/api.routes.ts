@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import { EstadoPoliza } from '@prisma/client';
 import { prisma } from '../config/database';
 import { procesarIngresoEmergencia } from '../webhooks/emergencyWebhook';
 import type { AlertasResponse, IngresoApiItem } from '../types/api';
@@ -14,9 +13,9 @@ function formatHoraIngreso(date: Date): string {
   }).format(date);
 }
 
-function polizaTexto(estado: EstadoPoliza): IngresoApiItem['poliza'] {
-  if (estado === EstadoPoliza.VIGENTE) return 'Póliza Válida';
-  if (estado === EstadoPoliza.SUSPENDIDA) return 'Póliza Inválida';
+function polizaTexto(estado: string): IngresoApiItem['poliza'] {
+  if (estado === 'VIGENTE') return 'Póliza Válida';
+  if (estado === 'SUSPENDIDA') return 'Póliza Inválida';
   return 'En Validación';
 }
 
