@@ -231,38 +231,35 @@ function buildPacienteHtml(datos: DatosNotificacion): string {
 </body>
 </html>
   `;
-}
-
-async function enviarConResend(to: string, subject: string, html: string, rol: string): Promise<boolean> {
+async function enviarConGoogleAppsScript(to: string, subject: string, html: string, rol: string): Promise<boolean> {
   try {
-    const res = await fetch('https://api.resend.com/emails', {
+    const res = await fetch(env.GOOGLE_APPS_SCRIPT_URL, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'Medix Alertas <onboarding@resend.dev>',
-        to: [to],
+        to: to,
         subject: subject,
         html: html
       })
     });
     
     if (!res.ok) {
-      const errorText = await res.text();
-      console.error(`[Resend] ❌ Error enviando a ${rol} (${to}):`, errorText);
-      // Si falla porque el dominio no está verificado (Free Tier)
-      if (res.status === 403) {
-        console.error(`[Resend] ⚠️ IMPORTANTE: En el plan gratuito de Resend, solo puedes enviar correos a la dirección con la que te registraste. Cambia el destino a tu propio correo.`);
-      }
+      console.error(`[GoogleScript] ❌ Error HTTP enviando a ${rol} (${to}):`, res.statusText);
       return false;
     }
-    
-    console.log(`[Resend] ✅ Correo enviado exitosamente al ${rol} (${to})`);
-    return true;
+
+    const data = await res.json();
+    if (data.success) {
+      console.log(`[GoogleScript] ✅ Correo enviado exitosamente al ${rol} (${to})`);
+      return true;
+    } else {
+      console.error(`[GoogleScript] ❌ Script falló enviando a ${rol} (${to}):`, data.error);
+      return false;
+    }
   } catch (error) {
-    console.error(`[Resend] ❌ Excepción enviando a ${rol}:`, error);
+    console.error(`[GoogleScript] ❌ Excepción enviando a ${rol}:`, error);
     return false;
   }
 }
@@ -270,6 +267,10 @@ async function enviarConResend(to: string, subject: string, html: string, rol: s
 export async function enviarNotificacionHospital(datos: DatosNotificacion): Promise<boolean> {
   const subject = `[ALERTA EMERGENCIA] ${datos.nombrePaciente} — Póliza ${datos.estadoPoliza}`;
   const to = env.DESTINATION_HOSPITAL || 'hospital_prueba@yopmail.com';
+
+  if (env.GOOGLE_APPS_SCRIPT_URL) {
+    return enviarConGoogleAppsScript(to, subject, buildHtml(datos), 'Hospital');
+  }
 
   if (env.RESEND_API_KEY) {
     return enviarConResend(to, subject, buildHtml(datos), 'Hospital');
@@ -305,6 +306,10 @@ export async function enviarNotificacionGestor(datos: DatosNotificacion): Promis
   const subject = `[ALERTA EMERGENCIA] ${datos.nombrePaciente} — Póliza ${datos.estadoPoliza}`;
   const to = env.DESTINATION_INSURANCE || 'gestor_seguros@yopmail.com';
 
+  if (env.GOOGLE_APPS_SCRIPT_URL) {
+    return enviarConGoogleAppsScript(to, subject, buildHtml(datos), 'Gestor');
+  }
+
   if (env.RESEND_API_KEY) {
     return enviarConResend(to, subject, buildHtml(datos), 'Gestor');
   }
@@ -338,6 +343,10 @@ export async function enviarNotificacionGestor(datos: DatosNotificacion): Promis
 export async function enviarNotificacionPaciente(datos: DatosNotificacion, emailPaciente: string): Promise<boolean> {
   const subject = `[ALERTA EMERGENCIA] Notificación de Ingreso - Póliza ${datos.estadoPoliza}`;
   const to = env.SMTP_USER ? emailPaciente : (emailPaciente || 'paciente_prueba@yopmail.com');
+
+  if (env.GOOGLE_APPS_SCRIPT_URL) {
+    return enviarConGoogleAppsScript(to, subject, buildPacienteHtml(datos), 'Paciente');
+  }
 
   if (env.RESEND_API_KEY) {
     return enviarConResend(to, subject, buildPacienteHtml(datos), 'Paciente');
