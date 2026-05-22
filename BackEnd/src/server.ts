@@ -1,12 +1,6 @@
+import { Server } from 'socket.io';
+import http from 'http';
 import app from './app';
-<<<<<<< Updated upstream
-
-const PORT = process.env.PORT || 4000;
-
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
-});
-=======
 import { mountNextApp } from './middlewares/nextServer';
 import { prisma } from './config/database';
 import { env } from './config/env';
@@ -94,4 +88,3 @@ start().catch((err) => {
   console.error('❌ Error fatal al iniciar el servidor:', err);
   process.exit(1);
 });
->>>>>>> Stashed changes

@@ -12,7 +12,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata = {
-  title: 'Alertas Salud - Sistema de Alerta Temprana',
+  title: 'Medix - Sistema de Alerta Temprana',
   description: 'Gestión de ingresos y validación de pólizas en tiempo real',
 };
 

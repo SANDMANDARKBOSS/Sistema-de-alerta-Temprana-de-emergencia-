@@ -1,17 +1,19 @@
-import express from 'express';
 import cors from 'cors';
+import express, { Request, Response, NextFunction } from 'express';
+import helmet from 'helmet';
+import morgan from 'morgan';
+import { env } from './config/env';
+import apiRoutes from './routes/api.routes';
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+// ─── CORS ─────────────────────────────────────────────────────────────────────
+const allowedOrigins = [
+  env.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://localhost:3001',
+].filter(Boolean);
 
-<<<<<<< Updated upstream
-app.get('/', (_, res) => {
-  res.send('API Alertas Salud funcionando');
-});
-
-=======
 app.use(
   cors({
     origin: (origin, callback) => {
@@ -72,5 +74,4 @@ app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   }
 });
 
->>>>>>> Stashed changes
 export default app;

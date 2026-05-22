@@ -1,5 +1,3 @@
-<<<<<<< Updated upstream
-=======
 import { z } from 'zod';
 import dotenv from 'dotenv';
 
@@ -51,4 +49,3 @@ if (!parsedEnv.success) {
 export const env = parsedEnv.success
   ? parsedEnv.data
   : envSchema.parse({ ...envSchema.shape }); // defaults de emergencia
->>>>>>> Stashed changes
