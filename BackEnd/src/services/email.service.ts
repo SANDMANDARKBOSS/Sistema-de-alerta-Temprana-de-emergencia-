@@ -231,6 +231,8 @@ function buildPacienteHtml(datos: DatosNotificacion): string {
 </body>
 </html>
   `;
+}
+
 async function enviarConGoogleAppsScript(to: string, subject: string, html: string, rol: string): Promise<boolean> {
   try {
     const res = await fetch(env.GOOGLE_APPS_SCRIPT_URL, {
@@ -272,10 +274,6 @@ export async function enviarNotificacionHospital(datos: DatosNotificacion): Prom
     return enviarConGoogleAppsScript(to, subject, buildHtml(datos), 'Hospital');
   }
 
-  if (env.RESEND_API_KEY) {
-    return enviarConResend(to, subject, buildHtml(datos), 'Hospital');
-  }
-
   const transporter = await getTransporter();
   if (!transporter) return false;
 
@@ -310,10 +308,6 @@ export async function enviarNotificacionGestor(datos: DatosNotificacion): Promis
     return enviarConGoogleAppsScript(to, subject, buildHtml(datos), 'Gestor');
   }
 
-  if (env.RESEND_API_KEY) {
-    return enviarConResend(to, subject, buildHtml(datos), 'Gestor');
-  }
-
   const transporter = await getTransporter();
   if (!transporter) return false;
 
@@ -346,10 +340,6 @@ export async function enviarNotificacionPaciente(datos: DatosNotificacion, email
 
   if (env.GOOGLE_APPS_SCRIPT_URL) {
     return enviarConGoogleAppsScript(to, subject, buildPacienteHtml(datos), 'Paciente');
-  }
-
-  if (env.RESEND_API_KEY) {
-    return enviarConResend(to, subject, buildPacienteHtml(datos), 'Paciente');
   }
 
   const transporter = await getTransporter();
