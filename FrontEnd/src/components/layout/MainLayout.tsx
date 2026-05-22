@@ -2,6 +2,7 @@ import React from 'react';
 import { Sidebar } from '../sidebar/Sidebar';
 import { Header } from '../header/Header';
 import { PanelLogsIA } from '../panel-logs-ia/PanelLogsIA';
+import { OnboardingGuide } from '../tutorial/OnboardingGuide';
 
 interface MainLayoutProps {
   children: React.ReactNode;
@@ -18,6 +19,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           {children}
         </main>
         <PanelLogsIA />
+        <OnboardingGuide />
       </div>
     </div>
   );

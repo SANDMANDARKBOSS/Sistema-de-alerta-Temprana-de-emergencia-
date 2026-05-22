@@ -10,6 +10,7 @@ import { IngresoCompleto } from '../../shared/models';
 import { io, Socket } from 'socket.io-client';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, X, User, Hospital, FileText, ShieldCheck, Mail, UserPlus } from 'lucide-react';
+import { clsx } from 'clsx';
 import { PanelLogsIA } from '../../components/panel-logs-ia/PanelLogsIA';
 
 function ModalExito({ titulo, mensaje, onClose }: { titulo: string; mensaje: string; onClose: () => void }) {
@@ -136,11 +137,19 @@ function ModalRegistro({ onClose, onSuccess }: { onClose: () => void; onSuccess:
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[110] flex items-center justify-center p-4">
-      <motion.div initial={{opacity:0, scale:0.9}} animate={{opacity:1, scale:1}} className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-        <div className="bg-[#1565C0] p-6 text-white flex justify-between items-center">
-          <h3 className="text-xl font-bold">Registrar Nuevo Asegurado</h3>
-          <button onClick={onClose}><X size={24} /></button>
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <motion.div initial={{opacity:0, scale:0.9}} animate={{opacity:1, scale:1}} className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-blue-50 to-white">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#1565C0] text-white rounded-lg flex items-center justify-center shadow-md">
+              <UserPlus size={20} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">Nuevo Asegurado</h3>
+              <p className="text-sm text-gray-500 font-medium">Registrar paciente en sistema</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"><X size={24} /></button>
         </div>
         <form onSubmit={handleSubmit} className="p-8 space-y-4">
           <div className="space-y-1">
@@ -169,9 +178,11 @@ function ModalRegistro({ onClose, onSuccess }: { onClose: () => void; onSuccess:
             <label className="text-xs font-bold text-gray-500 uppercase">Pre-existencias</label>
             <textarea className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-[#1565C0] outline-none h-20" value={formData.preExistencias} onChange={e => setFormData({...formData, preExistencias: e.target.value})} />
           </div>
-          <button disabled={enviando} className="w-full bg-[#1565C0] text-white py-3 rounded-xl font-bold hover:bg-[#0D47A1] transition-all disabled:opacity-50">
-            {enviando ? 'Guardando...' : 'Confirmar y Asegurar'}
-          </button>
+          <div className="pt-2">
+            <button disabled={enviando} className="w-full bg-[#1565C0] text-white py-3 rounded-xl font-bold hover:bg-[#0D47A1] transition-all shadow-md hover:shadow-lg disabled:opacity-50">
+              {enviando ? 'Guardando...' : 'Confirmar y Asegurar'}
+            </button>
+          </div>
         </form>
       </motion.div>
     </div>
@@ -181,11 +192,12 @@ function ModalRegistro({ onClose, onSuccess }: { onClose: () => void; onSuccess:
 function PanelSimulacion() {
   const [cedula, setCedula] = useState('');
   const [hospital, setHospital] = useState('Hospital Central');
+  const [motivo, setMotivo] = useState('');
   const [enviando, setEnviando] = useState(false);
   const [resultado, setResultado] = useState<{ok: boolean; msg: string} | null>(null);
 
   const simular = async () => {
-    if (!cedula.trim()) return;
+    if (!cedula.trim() || !motivo.trim()) return;
     setEnviando(true);
     setResultado(null);
     try {
@@ -193,13 +205,13 @@ function PanelSimulacion() {
       const resp = await fetch(`${apiUrl}/api/webhook/ingreso`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cedula: cedula.trim(), hospital })
+        body: JSON.stringify({ cedula: cedula.trim(), hospital, motivo: motivo.trim() })
       });
       const data = await resp.json();
       if (resp.ok) {
         setResultado({ 
           ok: true, 
-          msg: `✅ Alerta enviada` 
+          msg: `✅ Alerta enviada exitosamente. Revisa el chat IA abajo.` 
         });
         setTimeout(() => setResultado(null), 3000);
       } else {
@@ -210,44 +222,49 @@ function PanelSimulacion() {
     } finally {
       setEnviando(false);
       setCedula('');
+      setMotivo('');
     }
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm mb-6 flex flex-col gap-4">
+    <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm mb-6 flex flex-col gap-4 overflow-hidden relative">
       <div className="flex items-center gap-2">
         <div className="w-2 h-2 rounded-full bg-[#1565C0] animate-pulse"></div>
         <h3 className="text-sm font-bold text-[#1565C0]">Disparar Webhook (Simulación de Ingreso)</h3>
       </div>
-      <div className="flex gap-4 items-end flex-wrap">
+      
+      <div className="flex gap-4 items-end flex-wrap relative z-10">
         <div className="flex flex-col gap-1.5">
           <label className="text-xs font-bold text-[#6B7280] uppercase">Cédula del paciente</label>
           <input
             type="text"
             value={cedula}
             onChange={e => setCedula(e.target.value)}
+            disabled={enviando}
             placeholder="Ej: 1712345678"
-            className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1565C0] focus:ring-1 focus:ring-[#1565C0] bg-white w-48 transition-all"
+            className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1565C0] focus:ring-1 focus:ring-[#1565C0] bg-white w-48 transition-all disabled:opacity-50"
           />
         </div>
         <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-bold text-[#6B7280] uppercase">Hospital</label>
+          <label className="text-xs font-bold text-[#6B7280] uppercase">Motivo o Síntomas</label>
           <input
             type="text"
-            value={hospital}
-            onChange={e => setHospital(e.target.value)}
-            className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1565C0] focus:ring-1 focus:ring-[#1565C0] bg-white w-48 transition-all"
+            value={motivo}
+            onChange={e => setMotivo(e.target.value)}
+            disabled={enviando}
+            placeholder="Ej: Dolor de pecho agudo"
+            className="px-3 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:border-[#1565C0] focus:ring-1 focus:ring-[#1565C0] bg-white w-56 transition-all disabled:opacity-50"
           />
         </div>
         <button
           onClick={simular}
-          disabled={enviando || !cedula.trim()}
+          disabled={enviando || !cedula.trim() || !motivo.trim()}
           className="px-6 py-2.5 bg-[#1565C0] text-white text-sm font-bold rounded-lg hover:bg-[#0D47A1] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md hover:shadow-lg flex items-center gap-2"
         >
           {enviando ? (
             <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div> Procesando...</>
           ) : (
-            '🚨 Enviar Alerta'
+            '🚨 Enviar Alerta Webhook'
           )}
         </button>
         {resultado && (
@@ -276,18 +293,24 @@ export default function IngresosPagina() {
   const [modalExito, setModalExito] = useState<{abierto: boolean; msg: string}>({ abierto: false, msg: '' });
   const socketRef = useRef<Socket | null>(null);
 
-  const mapAlertaToIngreso = (alerta: any): IngresoCompleto => ({
-    id: alerta.id,
-    paciente: { id: alerta.cedulaPaciente, nombre: alerta.nombre || alerta.paciente || 'Paciente' },
-    motivo: alerta.hospital,
-    fecha: new Date(alerta.fechaIngreso).toLocaleTimeString('es-CO', { hour: '2-digit', minute:'2-digit', hour12: true }) + ' ' + new Date(alerta.fechaIngreso).toLocaleDateString('es-CO'),
-    poliza: alerta.estadoPoliza,
-    polizaNumero: alerta.polizaId,
-    prioridad: alerta.estadoPoliza === 'VIGENTE' ? 'Baja' : 'Alta',
-    estado: alerta.estadoPoliza === 'VIGENTE' ? 'Validada' : 'Requiere Revisión',
-    estadoSubtexto: alerta.analisis?.resumen || alerta.preExistencias || 'Sin análisis IA disponible',
-    tiempoEspera: '0 min'
-  });
+  const mapAlertaToIngreso = (alerta: any): IngresoCompleto => {
+    // Intentar extraer el análisis si viene concatenado de Notion
+    const analisisMatch = alerta.preExistencias?.match(/\[Análisis IA\]: (.*)/s);
+    const analisisExtraido = analisisMatch ? analisisMatch[1] : null;
+
+    return {
+      id: alerta.id,
+      paciente: { id: alerta.cedulaPaciente, nombre: alerta.nombre || alerta.paciente || 'Paciente' },
+      motivo: alerta.hospital,
+      fecha: new Date(alerta.fechaIngreso).toLocaleTimeString('es-CO', { hour: '2-digit', minute:'2-digit', hour12: true }) + ' ' + new Date(alerta.fechaIngreso).toLocaleDateString('es-CO'),
+      poliza: alerta.estadoPoliza,
+      polizaNumero: alerta.polizaId,
+      prioridad: alerta.estadoPoliza === 'VIGENTE' ? 'Baja' : 'Alta',
+      estado: alerta.estadoPoliza === 'VIGENTE' ? 'Validada' : 'Requiere Revisión',
+      estadoSubtexto: alerta.analisis?.resumen || analisisExtraido || alerta.preExistencias || 'Sin análisis IA disponible',
+      tiempoEspera: '0 min'
+    };
+  };
 
   const cargarDatos = useCallback(async () => {
     setCargando(true);

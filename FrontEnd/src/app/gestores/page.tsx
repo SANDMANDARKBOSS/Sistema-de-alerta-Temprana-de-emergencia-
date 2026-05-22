@@ -14,8 +14,81 @@ import {
   Filter, 
   MoreHorizontal,
   ChevronRight,
-  UserPlus
+  UserPlus,
+  Shield,
+  X
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+
+function ModalNuevoGestor({ onClose, onSuccess }: { onClose: () => void; onSuccess: (g: GestorApiItem) => void }) {
+  const [formData, setFormData] = useState({ nombre: '', correo: '', rol: 'Supervisor Médico', area: 'Validación de Pólizas' });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const nuevoGestor: GestorApiItem = {
+      id: Math.random().toString(36).substring(7),
+      nombre: formData.nombre,
+      correo: formData.correo,
+      rol: formData.rol,
+      area: formData.area,
+      estado: 'Activo',
+      ultimoAcceso: { fecha: new Date().toLocaleDateString('es-CO'), hora: new Date().toLocaleTimeString('es-CO') }
+    };
+    onSuccess(nuevoGestor);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+      <motion.div initial={{opacity:0, scale:0.9}} animate={{opacity:1, scale:1}} className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-blue-50 to-white">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#1565C0] text-white rounded-lg flex items-center justify-center shadow-md">
+              <Shield size={20} />
+            </div>
+            <div>
+              <h3 className="text-xl font-bold text-gray-900">Nuevo Gestor</h3>
+              <p className="text-sm text-gray-500 font-medium">Añadir usuario al sistema</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"><X size={24} /></button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-8 space-y-4">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-500 uppercase">Nombre Completo</label>
+            <input required type="text" className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-[#1565C0] outline-none transition-all" value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-gray-500 uppercase">Correo Electrónico</label>
+            <input required type="email" className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-[#1565C0] outline-none transition-all" value={formData.correo} onChange={e => setFormData({...formData, correo: e.target.value})} />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-500 uppercase">Rol</label>
+              <select className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-[#1565C0] outline-none transition-all" value={formData.rol} onChange={e => setFormData({...formData, rol: e.target.value})}>
+                <option>Supervisor Médico</option>
+                <option>Gestor de Casos</option>
+                <option>Admin Sistema</option>
+              </select>
+            </div>
+            <div className="space-y-1">
+              <label className="text-xs font-bold text-gray-500 uppercase">Área</label>
+              <select className="w-full px-4 py-2.5 border border-gray-300 rounded-xl focus:border-[#1565C0] outline-none transition-all" value={formData.area} onChange={e => setFormData({...formData, area: e.target.value})}>
+                <option>Validación de Pólizas</option>
+                <option>Atención al Cliente</option>
+                <option>Auditoría Médica</option>
+              </select>
+            </div>
+          </div>
+          <div className="pt-2">
+            <button className="w-full bg-[#1565C0] text-white py-3 rounded-xl font-bold hover:bg-[#0D47A1] transition-all shadow-md hover:shadow-lg">
+              Crear Gestor
+            </button>
+          </div>
+        </form>
+      </motion.div>
+    </div>
+  );
+}
 
 export default function GestoresPagina() {
   const [gestores, setGestores] = useState<GestorApiItem[]>([]);
@@ -24,6 +97,8 @@ export default function GestoresPagina() {
   const [apiDisponible, setApiDisponible] = useState(true);
   const [tabActivo, setTabActivo] = useState<'gestores' | 'notificaciones'>('gestores');
   const [busqueda, setBusqueda] = useState('');
+  const [modalAbierto, setModalAbierto] = useState(false);
+  const [menuActivo, setMenuActivo] = useState<string | null>(null);
 
   const cargarDatos = useCallback(async () => {
     try {
@@ -77,7 +152,10 @@ export default function GestoresPagina() {
             <h1 className="text-3xl font-bold text-[#111827]">Gestores y Notificaciones</h1>
             <p className="text-[#6B7280] text-sm mt-1">Administración de usuarios gestores y registro de comunicaciones del sistema.</p>
           </div>
-          <button className="flex items-center gap-2 bg-[#1565C0] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#0D47A1] transition-colors shadow-sm">
+          <button 
+            onClick={() => setModalAbierto(true)}
+            className="flex items-center gap-2 bg-[#1565C0] text-white px-4 py-2 rounded-lg font-bold text-sm hover:bg-[#0D47A1] transition-colors shadow-sm"
+          >
             <UserPlus size={18} />
             Nuevo Gestor
           </button>
@@ -210,10 +288,40 @@ export default function GestoresPagina() {
                           <p className="text-[#6B7280]">{gestor.ultimoAcceso?.hora || '--:--'}</p>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-right">
-                        <button className="p-2 text-[#6B7280] hover:text-[#111827] hover:bg-gray-100 rounded-lg transition-colors">
+                      <td className="px-6 py-4 text-right relative">
+                        <button 
+                          onClick={() => setMenuActivo(menuActivo === gestor.id ? null : gestor.id)}
+                          className="p-2 text-[#6B7280] hover:text-[#111827] hover:bg-gray-100 rounded-lg transition-colors"
+                        >
                           <MoreHorizontal size={18} />
                         </button>
+                        <AnimatePresence>
+                          {menuActivo === gestor.id && (
+                            <motion.div 
+                              initial={{opacity: 0, y: -5}} animate={{opacity: 1, y: 0}} exit={{opacity: 0, y: -5}}
+                              className="absolute right-6 top-14 bg-white border border-gray-100 shadow-xl rounded-xl overflow-hidden z-50 w-48 py-1"
+                            >
+                              <button 
+                                onClick={() => {
+                                  setGestores(gs => gs.map(g => g.id === gestor.id ? {...g, estado: g.estado === 'Activo' ? 'Inactivo' : 'Activo'} : g));
+                                  setMenuActivo(null);
+                                }}
+                                className="w-full text-left px-4 py-2.5 text-sm font-medium hover:bg-gray-50"
+                              >
+                                {gestor.estado === 'Activo' ? 'Suspender Acceso' : 'Activar Acceso'}
+                              </button>
+                              <button 
+                                onClick={() => {
+                                  setGestores(gs => gs.filter(g => g.id !== gestor.id));
+                                  setMenuActivo(null);
+                                }}
+                                className="w-full text-left px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50"
+                              >
+                                Eliminar Gestor
+                              </button>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                       </td>
                     </tr>
                   ))}
@@ -261,6 +369,18 @@ export default function GestoresPagina() {
           </div>
         </div>
       </div>
+      
+      <AnimatePresence>
+        {modalAbierto && (
+          <ModalNuevoGestor 
+            onClose={() => setModalAbierto(false)} 
+            onSuccess={(nuevoGestor) => {
+              setGestores(prev => [nuevoGestor, ...prev]);
+              setModalAbierto(false);
+            }} 
+          />
+        )}
+      </AnimatePresence>
     </MainLayout>
   );
 }

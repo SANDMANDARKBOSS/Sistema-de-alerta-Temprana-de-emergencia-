@@ -8,6 +8,7 @@ export interface DatosPoliza {
   preExistencias?: string | null;
   cobertura: string;
   hospital: string;
+  motivoIngreso: string;
 }
 
 export interface AnalisisIA {
@@ -23,22 +24,24 @@ Analiza la siguiente información de un ingreso a emergencia hospitalaria:
 
 Nombre del Paciente: {nombrePaciente}
 Estado de la Póliza: {estadoPoliza}
-Pre-existencias: {preExistencias}
+Pre-existencias declaradas en Póliza: {preExistencias}
 Cobertura: {cobertura}
 Hospital: {hospital}
+Motivo / Síntomas de Ingreso actual: {motivoIngreso}
 
 Retorna ÚNICAMENTE un objeto JSON válido con la siguiente estructura, sin markdown, sin texto adicional:
 {
   "validacion": "APROBADA" | "RECHAZADA" | "REVISION",
-  "resumen": "Resumen conciso de la situación en 1 o 2 oraciones.",
+  "resumen": "Resumen conciso de la situación cruzando síntomas y pre-existencias en 1 o 2 oraciones.",
   "recomendaciones": "Recomendaciones de acción para el hospital o el gestor del seguro.",
   "riesgo": "ALTO" | "MEDIO" | "BAJO"
 }
 
-Reglas:
-- Si el Estado de la Póliza es VENCIDA o SUSPENDIDA, la validación debe ser RECHAZADA.
-- Si las pre-existencias son graves y la póliza es VIGENTE, puede ser REVISION.
-- Evalúa el riesgo (ALTO, MEDIO, BAJO) según el estado y cobertura.
+Reglas estrictas:
+- Si el Estado de la Póliza es VENCIDA o SUSPENDIDA, la validación DEBE ser RECHAZADA inmediatamente.
+- Si la póliza está VIGENTE, cruza el "Motivo de Ingreso" con las "Pre-existencias". Si los síntomas del paciente corresponden a una pre-existencia que no está cubierta según la "Cobertura", el estado debe ser REVISION o RECHAZADA.
+- Si el Motivo de Ingreso es totalmente diferente a las pre-existencias y la póliza es VIGENTE, la validación debería ser APROBADA.
+- Evalúa el riesgo (ALTO, MEDIO, BAJO) según la gravedad de los síntomas y el estado de la póliza.
 `;
 
 function parseJSON(text: string): AnalisisIA {
@@ -61,7 +64,8 @@ export async function analizarPoliza(datos: DatosPoliza): Promise<AnalisisIA> {
     .replace('{estadoPoliza}', datos.estadoPoliza)
     .replace('{preExistencias}', datos.preExistencias || 'Ninguna registrada')
     .replace('{cobertura}', datos.cobertura)
-    .replace('{hospital}', datos.hospital);
+    .replace('{hospital}', datos.hospital)
+    .replace('{motivoIngreso}', datos.motivoIngreso);
 
   const start = Date.now();
 

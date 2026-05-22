@@ -9,28 +9,34 @@ import {
   FolderOpen, 
   BarChart2, 
   Users, 
-  Settings
+  Settings,
+  Activity,
+  MailCheck
 } from 'lucide-react';
 import { clsx } from 'clsx';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { EmailTutorialModal } from '../tutorial/EmailTutorialModal';
 
 const menuItems = [
   { icon: Home, label: 'Inicio', href: '/dashboard' },
   { icon: TrendingUp, label: 'Ingresos en Tiempo Real', href: '/ingresos' },
   { icon: Bell, label: 'Alertas Activas', href: '/alertas' },
   { icon: FileText, label: 'Pólizas y Validaciones', href: '/polizas' },
+  { icon: Users, label: 'Asegurados', href: '/asegurados' },
   { icon: FolderOpen, label: 'Historial de Casos', href: '/historial' },
   { icon: BarChart2, label: 'Reportes', href: '/reportes' },
   { icon: Users, label: 'Gestores', href: '/gestores' },
   { icon: Settings, label: 'Configuración', href: '/config' },
+  { icon: Activity, label: 'Diagnóstico', href: '/diagnostico' },
 ];
 
 export const Sidebar = () => {
   const pathname = usePathname();
   const router = useRouter();
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
+  const [isTutorialOpen, setIsTutorialOpen] = useState(false);
 
   // Prefetch all routes on mount
   useEffect(() => {
@@ -107,8 +113,19 @@ export const Sidebar = () => {
         </nav>
       </div>
 
-      <div className="mt-auto p-4 border-t border-gray-100">
-        <div className="mb-2">
+      <div className="mt-auto p-4">
+        <button
+          onClick={() => setIsTutorialOpen(true)}
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl cursor-pointer transition-all duration-200 bg-gradient-to-r from-[#1565C0] to-[#3B82F6] text-white hover:shadow-md mb-4"
+        >
+          <MailCheck size={20} className="stroke-2" />
+          <span className="text-[14px] flex-1 text-left font-bold">
+            Verificar Correos
+          </span>
+        </button>
+
+        <div className="border-t border-gray-100 pt-4">
+          <div className="mb-2">
           <p className="text-[10px] text-[#6B7280] font-bold uppercase px-2 tracking-wider">Sistema Demo</p>
           <div className="mt-3 flex items-center gap-3 px-2">
             <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#1565C0] to-[#3B82F6] flex items-center justify-center text-white text-xs font-bold shadow-sm">
@@ -121,6 +138,12 @@ export const Sidebar = () => {
           </div>
         </div>
       </div>
+      </div>
+      
+      <EmailTutorialModal 
+        isOpen={isTutorialOpen} 
+        onClose={() => setIsTutorialOpen(false)} 
+      />
     </div>
   );
 };
