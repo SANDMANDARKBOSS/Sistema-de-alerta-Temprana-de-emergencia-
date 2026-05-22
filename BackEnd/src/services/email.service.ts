@@ -251,6 +251,8 @@ export async function enviarNotificacionHospital(datos: DatosNotificacion): Prom
     
     if (!env.SMTP_USER) {
        console.log(`[Email] 📧 Correo de prueba enviado a Hospital. Visualizar aquí: ${nodemailer.getTestMessageUrl(info)}`);
+    } else {
+       console.log(`[Email] ✅ Correo enviado exitosamente al Hospital (${to})`);
     }
     
     return true;
@@ -278,6 +280,8 @@ export async function enviarNotificacionGestor(datos: DatosNotificacion): Promis
 
     if (!env.SMTP_USER) {
       console.log(`[Email] 📧 Correo de prueba enviado a Gestor. Visualizar aquí: ${nodemailer.getTestMessageUrl(info)}`);
+    } else {
+      console.log(`[Email] ✅ Correo enviado exitosamente al Gestor (${to})`);
     }
 
     return true;
@@ -305,6 +309,8 @@ export async function enviarNotificacionPaciente(datos: DatosNotificacion, email
 
     if (!env.SMTP_USER) {
       console.log(`[Email] 📧 Correo de prueba enviado a PACIENTE (${emailPaciente}). Visualizar aquí: ${nodemailer.getTestMessageUrl(info)}`);
+    } else {
+      console.log(`[Email] ✅ Correo enviado exitosamente al PACIENTE (${to})`);
     }
 
     return true;
