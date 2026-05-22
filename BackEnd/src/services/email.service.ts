@@ -1,6 +1,10 @@
 import nodemailer from 'nodemailer';
+import dns from 'dns';
 import { env } from '../config/env';
 import { AnalisisIA } from './ai.service';
+
+// Forzar IPv4 para evitar errores ENETUNREACH en Render (que no soporta IPv6 saliente)
+dns.setDefaultResultOrder('ipv4first');
 
 export interface DatosNotificacion {
   nombrePaciente: string;
