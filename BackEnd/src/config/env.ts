@@ -29,8 +29,7 @@ const envSchema = z.object({
   GROQ_MODEL: z.string().default('llama-3.3-70b-versatile'),
 
   // Email — opcionales: si no están, el sistema funciona sin enviar correos
-  GOOGLE_APPS_SCRIPT_URL: z.string().default('https://script.google.com/macros/s/AKfycbx_WVXiSBEvS5ARGRNpwt4YvG_NMXsWXYPD2zjhOmgbFAw0vJ4ypDVfwcLI3MPxhxlGpw/exec'),
-  RESEND_API_KEY: z.string().optional().default(''),
+  SENDGRID_API_KEY: z.string().optional().default(''),
   SMTP_SERVER: z.string().default('smtp.gmail.com'),
   SMTP_PORT: z.string().default('587').transform(Number),
   SMTP_SECURE: z.string().default('false').transform(val => val.toLowerCase() === 'true'),

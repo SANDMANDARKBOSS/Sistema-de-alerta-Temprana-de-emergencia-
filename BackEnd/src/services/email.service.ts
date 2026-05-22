@@ -233,35 +233,44 @@ function buildPacienteHtml(datos: DatosNotificacion): string {
   `;
 }
 
-async function enviarConGoogleAppsScript(to: string, subject: string, html: string, rol: string): Promise<boolean> {
+async function enviarConSendGrid(to: string, subject: string, html: string, rol: string): Promise<boolean> {
   try {
-    const res = await fetch(env.GOOGLE_APPS_SCRIPT_URL, {
+    const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${env.SENDGRID_API_KEY}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        to: to,
-        subject: subject,
-        html: html
+        personalizations: [
+          {
+            to: [{ email: to }],
+            subject: subject
+          }
+        ],
+        from: {
+          email: 'yambayjosue@gmail.com',
+          name: 'Sistema Medix'
+        },
+        content: [
+          {
+            type: 'text/html',
+            value: html
+          }
+        ]
       })
     });
     
     if (!res.ok) {
-      console.error(`[GoogleScript] ❌ Error HTTP enviando a ${rol} (${to}):`, res.statusText);
+      const errorText = await res.text();
+      console.error(`[SendGrid] ❌ Error HTTP enviando a ${rol} (${to}):`, errorText);
       return false;
     }
 
-    const data = await res.json();
-    if (data.success) {
-      console.log(`[GoogleScript] ✅ Correo enviado exitosamente al ${rol} (${to})`);
-      return true;
-    } else {
-      console.error(`[GoogleScript] ❌ Script falló enviando a ${rol} (${to}):`, data.error);
-      return false;
-    }
+    console.log(`[SendGrid] ✅ Correo enviado exitosamente al ${rol} (${to})`);
+    return true;
   } catch (error) {
-    console.error(`[GoogleScript] ❌ Excepción enviando a ${rol}:`, error);
+    console.error(`[SendGrid] ❌ Excepción enviando a ${rol}:`, error);
     return false;
   }
 }
@@ -270,8 +279,8 @@ export async function enviarNotificacionHospital(datos: DatosNotificacion): Prom
   const subject = `[ALERTA EMERGENCIA] ${datos.nombrePaciente} — Póliza ${datos.estadoPoliza}`;
   const to = env.DESTINATION_HOSPITAL || 'hospital_prueba@yopmail.com';
 
-  if (env.GOOGLE_APPS_SCRIPT_URL) {
-    return enviarConGoogleAppsScript(to, subject, buildHtml(datos), 'Hospital');
+  if (env.SENDGRID_API_KEY) {
+    return enviarConSendGrid(to, subject, buildHtml(datos), 'Hospital');
   }
 
   const transporter = await getTransporter();
@@ -304,8 +313,8 @@ export async function enviarNotificacionGestor(datos: DatosNotificacion): Promis
   const subject = `[ALERTA EMERGENCIA] ${datos.nombrePaciente} — Póliza ${datos.estadoPoliza}`;
   const to = env.DESTINATION_INSURANCE || 'gestor_seguros@yopmail.com';
 
-  if (env.GOOGLE_APPS_SCRIPT_URL) {
-    return enviarConGoogleAppsScript(to, subject, buildHtml(datos), 'Gestor');
+  if (env.SENDGRID_API_KEY) {
+    return enviarConSendGrid(to, subject, buildHtml(datos), 'Gestor');
   }
 
   const transporter = await getTransporter();
@@ -338,8 +347,8 @@ export async function enviarNotificacionPaciente(datos: DatosNotificacion, email
   const subject = `[ALERTA EMERGENCIA] Notificación de Ingreso - Póliza ${datos.estadoPoliza}`;
   const to = env.SMTP_USER ? emailPaciente : (emailPaciente || 'paciente_prueba@yopmail.com');
 
-  if (env.GOOGLE_APPS_SCRIPT_URL) {
-    return enviarConGoogleAppsScript(to, subject, buildPacienteHtml(datos), 'Paciente');
+  if (env.SENDGRID_API_KEY) {
+    return enviarConSendGrid(to, subject, buildPacienteHtml(datos), 'Paciente');
   }
 
   const transporter = await getTransporter();
