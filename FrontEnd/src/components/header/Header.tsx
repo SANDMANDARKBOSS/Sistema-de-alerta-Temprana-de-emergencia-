@@ -7,8 +7,9 @@ import { es } from 'date-fns/locale';
 import { getAlertas } from '../../services/api/client';
 import { Ingreso } from '../../shared/models';
 import Link from 'next/link';
+import { Menu } from 'lucide-react';
 
-export const Header = () => {
+export const Header = ({ onMenuClick }: { onMenuClick?: () => void }) => {
   const [time, setTime] = useState<Date | null>(null);
   const [ingresos, setIngresos] = useState<Ingreso[]>([]);
   const [formatoHora, setFormatoHora] = useState('12h');
@@ -46,15 +47,18 @@ export const Header = () => {
   }, [ingresos]);
 
   return (
-    <header className="h-16 bg-white/92 border-b border-[#E2E8F0] px-8 flex items-center justify-between sticky top-0 z-10 backdrop-blur-sm">
-      <div className="flex items-center gap-4 text-[#64748B]">
-        <div className="flex items-center gap-2">
+    <header className="h-16 bg-white/92 border-b border-[#E2E8F0] px-4 md:px-8 flex items-center justify-between sticky top-0 z-10 backdrop-blur-sm">
+      <div className="flex items-center gap-2 md:gap-4 text-[#64748B]">
+        <button onClick={onMenuClick} className="lg:hidden p-1 mr-1 text-[#0F172A] hover:bg-gray-100 rounded">
+          <Menu size={20} />
+        </button>
+        <div className="hidden sm:flex items-center gap-2">
           <Clock size={16} />
-          <span className="text-sm font-medium capitalize">
+          <span className="text-xs md:text-sm font-medium capitalize">
             {time ? format(time, "eeee, dd 'de' MMMM yyyy", { locale: es }) : '---'}
           </span>
         </div>
-        <div className="w-px h-4 bg-gray-200"></div>
+        <div className="hidden sm:block w-px h-4 bg-gray-200"></div>
         <span className="text-sm font-bold text-[#0F172A]">
           {time ? format(time, formatoHora === '24h' ? "HH:mm:ss" : "hh:mm:ss a") : '--:--:--'}
         </span>

@@ -34,7 +34,7 @@ const menuItems = [
   { icon: Activity, label: 'Diagnóstico', href: '/diagnostico' },
 ];
 
-export const Sidebar = () => {
+export const Sidebar = ({ isOpen, setIsOpen }: { isOpen?: boolean, setIsOpen?: (v: boolean) => void }) => {
   const pathname = usePathname();
   const router = useRouter();
   const [navigatingTo, setNavigatingTo] = useState<string | null>(null);
@@ -57,10 +57,14 @@ export const Sidebar = () => {
       setNavigatingTo(href);
       router.push(href);
     }
+    if (setIsOpen) setIsOpen(false);
   };
 
   return (
-    <div className="w-[220px] h-screen bg-white/95 border-r border-[#E2E8F0] flex flex-col fixed left-0 top-0 z-50 backdrop-blur-sm">
+    <div className={clsx(
+      "w-[220px] h-screen bg-white/95 border-r border-[#E2E8F0] flex flex-col fixed left-0 top-0 z-50 backdrop-blur-sm transition-transform duration-300",
+      isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+    )}>
       <div className="p-6">
         <div className="flex items-center gap-3 mb-8">
           <div className="overflow-hidden rounded-2xl border border-[#E2E8F0] bg-white shadow-[0_14px_34px_rgba(15,23,42,0.08)]">
