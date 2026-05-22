@@ -10,20 +10,26 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#1565C0',
-          light: '#E3F2FD',
+          DEFAULT: '#2563EB',
+          light: '#DBEAFE',
         },
+        secondary: '#22D3EE',
+        accent: '#2DD4BF',
+        dark: '#0F172A',
+        grayText: '#64748B',
+        border: '#E2E8F0',
+        background: '#F8FAFC',
         success: {
-          DEFAULT: '#4CAF50',
-          light: '#E8F5E9',
+          DEFAULT: '#16A34A',
+          light: '#DCFCE7',
         },
         warning: {
-          DEFAULT: '#FFC107',
-          light: '#FFF8E1',
+          DEFAULT: '#F59E0B',
+          light: '#FEF3C7',
         },
         danger: {
-          DEFAULT: '#F44336',
-          light: '#FFEBEE',
+          DEFAULT: '#FF5A5F',
+          light: '#FFE4E6',
         },
       },
       fontFamily: {

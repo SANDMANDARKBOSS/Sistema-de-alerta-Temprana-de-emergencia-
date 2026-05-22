@@ -1,5 +1,6 @@
 import React from 'react';
 import { Webhook, ShieldCheck, FileSearch, Send, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
 export const FlujoSistema = () => {
   const pasos = [
@@ -33,9 +34,9 @@ export const FlujoSistema = () => {
     <div className="bg-white p-8 rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)]">
       <div className="flex justify-between items-center mb-8">
         <h3 className="text-lg font-bold text-[#111827]">Flujo del Sistema</h3>
-        <button className="text-[#1565C0] text-sm font-semibold hover:underline flex items-center gap-1">
+        <Link href="/ingresos" className="text-[#1565C0] text-sm font-semibold hover:underline flex items-center gap-1">
           Ver flujo completo <ArrowRight size={14} />
-        </button>
+        </Link>
       </div>
 
       <div className="flex items-center justify-between relative">
