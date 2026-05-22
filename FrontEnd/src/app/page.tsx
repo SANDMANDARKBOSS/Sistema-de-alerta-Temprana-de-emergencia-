@@ -137,7 +137,7 @@ export default function HomePage() {
 
       <div className="relative z-10">
         <header className="sticky top-0 z-40 border-b border-border/80 bg-white/92 backdrop-blur-md">
-          <div className="flex w-full items-center justify-between gap-6 px-4 py-4 md:px-8 xl:px-10">
+          <div className="flex w-full items-center justify-between gap-3 md:gap-6 px-4 py-4 md:px-8 xl:px-10">
             <Link href="/" className="flex items-center gap-4">
               <div className="overflow-hidden rounded-[20px] border border-border bg-white shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
                 <Image src={medixLogo} alt="Logo Medix" className="h-14 w-14 object-cover" priority />
@@ -186,13 +186,13 @@ export default function HomePage() {
                 </p>
 
                 <div className="mt-6 space-y-2">
-                  <p className="medix-hero-line text-[clamp(3rem,7vw,6.25rem)] font-bold leading-[0.92] tracking-[-0.08em] text-dark opacity-0">
+                  <p className="medix-hero-line text-[clamp(2.2rem,6vw,6.25rem)] font-bold leading-[1.1] tracking-[-0.08em] text-dark opacity-0">
                     Respuesta inmediata.
                   </p>
-                  <p className="medix-hero-line text-[clamp(3rem,7vw,6.25rem)] font-bold leading-[0.92] tracking-[-0.08em] text-dark opacity-0">
+                  <p className="medix-hero-line text-[clamp(2.2rem,6vw,6.25rem)] font-bold leading-[1.1] tracking-[-0.08em] text-dark opacity-0">
                     Cobertura validada.
                   </p>
-                  <p className="medix-hero-line text-[clamp(3rem,7vw,6.25rem)] font-bold leading-[0.92] tracking-[-0.08em] text-transparent opacity-0 bg-[linear-gradient(135deg,#2DD4BF_0%,#22D3EE_45%,#2563EB_100%)] bg-clip-text">
+                  <p className="medix-hero-line text-[clamp(2.2rem,6vw,6.25rem)] font-bold leading-[1.1] tracking-[-0.08em] text-transparent opacity-0 bg-[linear-gradient(135deg,#2DD4BF_0%,#22D3EE_45%,#2563EB_100%)] bg-clip-text">
                     Decisiones con contexto.
                   </p>
                 </div>
@@ -252,12 +252,12 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="medix-stage-shell relative min-h-[620px] overflow-hidden rounded-[34px] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(248,250,252,0.80)_100%)] shadow-[0_26px_70px_rgba(15,23,42,0.08)] opacity-0">
+            <div className="medix-stage-shell relative min-h-[500px] md:min-h-[620px] overflow-hidden rounded-[34px] border border-border bg-[linear-gradient(180deg,rgba(255,255,255,0.94)_0%,rgba(248,250,252,0.80)_100%)] shadow-[0_26px_70px_rgba(15,23,42,0.08)] opacity-0 flex flex-col justify-between">
               <div className="medix-stage-glow absolute left-1/2 top-1/2 h-[24rem] w-[24rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(34,211,238,0.20)_0%,rgba(37,99,235,0.08)_45%,transparent_72%)]" />
 
               <div className="pointer-events-none absolute inset-0 z-10 bg-[linear-gradient(180deg,rgba(248,250,252,0.08)_0%,rgba(248,250,252,0)_24%,rgba(248,250,252,0)_72%,rgba(248,250,252,0.46)_100%)]" />
 
-              <div className="absolute left-0 top-0 z-20 w-full border-b border-border/80 bg-white/82 px-6 py-5 backdrop-blur-sm">
+              <div className="relative md:absolute left-0 top-0 z-20 w-full border-b border-border/80 bg-white/82 px-6 py-5 backdrop-blur-sm">
                 <div className="flex items-start justify-between gap-6">
                   <div>
                     <p className="text-[12px] font-semibold uppercase tracking-[0.22em] text-primary">
@@ -278,7 +278,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="medix-stage-orbit absolute inset-x-0 bottom-[112px] top-[108px] flex items-center justify-center px-8">
+              <div className="medix-stage-orbit relative md:absolute inset-x-0 md:bottom-[112px] md:top-[108px] flex items-center justify-center px-4 sm:px-8 mt-10 mb-10 md:mt-0 md:mb-0">
                 <div className="grid w-full max-w-3xl items-center gap-10 lg:grid-cols-[0.95fr_1.05fr]">
                   <div className="relative flex justify-center lg:justify-start">
                     <div className="absolute h-64 w-64 rounded-full bg-[radial-gradient(circle,rgba(45,212,191,0.22)_0%,rgba(37,99,235,0.10)_52%,transparent_74%)] blur-2xl" />
@@ -286,7 +286,7 @@ export default function HomePage() {
                       <Image
                         src={medixLogo}
                         alt="Logo Medix"
-                        className="h-[290px] w-[290px] object-cover md:h-[340px] md:w-[340px]"
+                        className="h-[200px] w-[200px] sm:h-[260px] sm:w-[260px] object-cover md:h-[340px] md:w-[340px]"
                         priority
                       />
                     </div>
@@ -326,7 +326,7 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="absolute bottom-0 left-0 z-20 w-full border-t border-border/80 bg-white/84 px-6 py-5 backdrop-blur-sm">
+              <div className="relative md:absolute bottom-0 left-0 z-20 w-full border-t border-border/80 bg-white/84 px-6 py-5 backdrop-blur-sm mt-auto">
                 <div className="grid gap-5 md:grid-cols-3">
                   <div>
                     <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-grayText">

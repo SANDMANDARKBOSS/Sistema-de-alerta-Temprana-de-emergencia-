@@ -15,7 +15,7 @@ export const IngresoTabla: React.FC<IngresoTablaProps> = memo(({ ingresos }) => 
         <Link href="/ingresos" className="text-[#1565C0] text-sm font-semibold hover:underline">Ver todos</Link>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-left">
+        <table className="w-full text-left min-w-[700px]">
           <thead>
             <tr className="bg-gray-50 text-[#6B7280] text-[10px] font-bold uppercase tracking-wider">
               <th className="px-6 py-4">Paciente</th>
