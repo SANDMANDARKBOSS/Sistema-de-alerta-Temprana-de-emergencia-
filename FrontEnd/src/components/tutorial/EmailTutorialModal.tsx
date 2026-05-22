@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, ExternalLink, Copy, Check, MailCheck } from 'lucide-react';
 import Image from 'next/image';
-import tutorialImg from '../../assets/Tutorial_Verificar_Correo.png';
+import tutorialImg from '../../Assets/Tutorial_Verificar_Correo.png';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 

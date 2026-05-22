@@ -8,7 +8,7 @@
     "npm": ">=9.0.0"
   },
   "scripts": {
-    "build": "npm install --prefix FrontEnd --legacy-peer-deps && npm run build --prefix FrontEnd && npm install --prefix BackEnd && npm run build --prefix BackEnd",
+    "build": "npm install --prefix FrontEnd --include=dev --legacy-peer-deps && npm run build --prefix FrontEnd && npm install --prefix BackEnd --include=dev && npm run build --prefix BackEnd",
     "start": "node BackEnd/dist/server.js",
     "dev:back": "npm run dev --prefix BackEnd",
     "dev:front": "npm run dev --prefix FrontEnd"
