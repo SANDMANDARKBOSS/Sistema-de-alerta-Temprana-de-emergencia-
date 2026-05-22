@@ -168,7 +168,10 @@ export const TablaAlertas: React.FC<TablaAlertasProps> = ({
                       >
                         Ver detalles
                       </button>
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors">
+                      <button 
+                        onClick={() => onVerDetalles(alerta)}
+                        className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+                      >
                         <MoreVertical size={18} />
                       </button>
                     </div>

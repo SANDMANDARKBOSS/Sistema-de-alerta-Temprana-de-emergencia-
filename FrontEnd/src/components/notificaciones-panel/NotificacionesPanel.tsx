@@ -1,6 +1,7 @@
 import React from 'react';
 import { Notificacion } from '../../shared/models';
 import { clsx } from 'clsx';
+import Link from 'next/link';
 
 interface NotificacionesPanelProps {
   notificaciones: Notificacion[];
@@ -40,9 +41,9 @@ export const NotificacionesPanel: React.FC<NotificacionesPanelProps> = ({ notifi
           </div>
         ))}
       </div>
-      <button className="w-full mt-6 py-2 text-xs font-bold text-[#1565C0] border border-[#E3F2FD] rounded-lg hover:bg-[#E3F2FD] transition-colors">
+      <Link href="/alertas" className="w-full mt-6 py-2 text-xs font-bold text-[#1565C0] border border-[#E3F2FD] rounded-lg hover:bg-[#E3F2FD] transition-colors flex justify-center text-center">
         Ver todas las notificaciones
-      </button>
+      </Link>
     </div>
   );
 };

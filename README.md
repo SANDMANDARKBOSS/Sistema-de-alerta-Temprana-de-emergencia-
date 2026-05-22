@@ -1,46 +1,66 @@
-# Sistema de Alerta Temprana de Ingresos a Emergencias - Reto 4
+# 🏥 Sistema de Alerta Temprana de Ingresos a Emergencias
 
-## 🚀 Descripción
-Esta solución es un **Agente IA Agéntico** que actúa como un Webhook inteligente para hospitales. Cuando un paciente ingresa a emergencias, el sistema valida automáticamente la póliza en Notion, analiza preexistencias con Google Gemini y notifica en tiempo real vía email al hospital y a la aseguradora.
+Un sistema inteligente que se activa cuando un asegurado ingresa a la emergencia del hospital. Un **agente de IA** revisa instantáneamente la validez de la póliza, el historial de pre-existencias y envía notificaciones al departamento de admisiones del hospital y al gestor de casos del seguro simultáneamente.
 
-## 🛠️ Tecnologías y Herramientas
-*   **Lenguaje:** Python 3.10+
-*   **IA/ML:** Google Gemini 1.5 Flash, LangChain
-*   **Backend:** FastAPI + Uvicorn
-*   **Base de Datos:** Notion API
-*   **Notificaciones:** SMTP (Email)
+## ⚙️ Arquitectura
 
-## 📦 Instalación y Configuración
+```
+Hospital (Webhook) → Backend (Node.js/Express)
+                       ├── Notion API (Base de datos)
+                       ├── Agente IA (Groq / LLaMA 3.3)
+                       ├── Email Service (SMTP)
+                       └── Socket.IO → Frontend (Next.js)
+```
 
-1. **Clonar el repositorio e ingresar a la carpeta:**
-   ```bash
-   cd project
-   ```
+## 🚀 Flujo del Sistema
 
-2. **Instalar dependencias:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+1. **Webhook de Ingreso** — Se recibe la cédula del paciente, hospital y motivo de ingreso.
+2. **Consulta a Notion** — Se busca al asegurado y su póliza asociada en la base de datos.
+3. **Análisis IA** — El agente IA (LLaMA 3.3 vía Groq) evalúa la póliza, pre-existencias, cobertura y genera un dictamen de validación/rechazo con nivel de riesgo.
+4. **Notificación Simultánea** — Se envían 3 correos en paralelo: al hospital, al gestor del seguro y al paciente asegurado.
+5. **Registro en Tiempo Real** — La alerta se registra en Notion y se emite vía Socket.IO al panel del frontend.
 
-3. **Configurar variables de entorno:**
-   Edita el archivo `.env` con tus credenciales reales:
-   * `NOTION_API_KEY`: Token de integración de Notion.
-   * `NOTION_DATABASE_ID`: ID de tu base de datos de pólizas.
-   * `GOOGLE_API_KEY`: API Key de Google AI Studio.
-   * `SMTP_USER` y `SMTP_PASSWORD`: Credenciales para envío de correos.
+## 🛠️ Tecnologías
 
-## 🖥️ Uso
+| Componente | Tecnología |
+|---|---|
+| Frontend | Next.js 14, TypeScript, Framer Motion |
+| Backend | Node.js, Express, Socket.IO |
+| Base de Datos | Notion API |
+| Inteligencia Artificial | Groq SDK (LLaMA 3.3 70B) |
+| Email | Nodemailer (SMTP) |
+| Estilos | Tailwind CSS |
 
-1. **Iniciar el servidor del Webhook:**
-   ```bash
-   python -m src.main
-   ```
+## 📦 Instalación
 
-2. **Simular un ingreso de emergencia:**
-   Ejecuta el script de prueba en otra terminal:
-   ```bash
-   python mock_hospital_request.py
-   ```
+### Backend
+```bash
+cd BackEnd
+npm install
+cp .env.example .env   # Configurar variables de entorno
+npm run dev
+```
+
+### Frontend
+```bash
+cd FrontEnd
+npm install
+npm run dev
+```
+
+## 🔐 Variables de Entorno (BackEnd/.env)
+
+| Variable | Descripción |
+|---|---|
+| `NOTION_TOKEN` | Token de integración de Notion |
+| `NOTION_ASEGURADOS_DB_ID` | ID de la base de datos de asegurados |
+| `NOTION_POLIZAS_DB_ID` | ID de la base de datos de pólizas |
+| `NOTION_ALERTAS_DB_ID` | ID de la base de datos de alertas |
+| `GROQ_API_KEY` | API Key de Groq para el agente IA |
+| `SMTP_USER` | Correo SMTP para envío de emails |
+| `SMTP_PASSWORD` | Contraseña del correo SMTP |
+| `DESTINATION_HOSPITAL` | Email de notificación al hospital |
+| `DESTINATION_INSURANCE` | Email de notificación al gestor |
 
 ## 👥 Equipo
-*   **Sebastian Yambay** - [Rol/LinkedIn]
+* **Sebastian Yambay**

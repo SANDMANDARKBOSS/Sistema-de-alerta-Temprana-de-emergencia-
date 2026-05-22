@@ -92,11 +92,19 @@ export default function ReportesPagina() {
 
         <AnimatePresence>
           {modalConfig && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[200] flex items-center justify-center p-4">
-              <motion.div initial={{opacity:0, scale:0.9}} animate={{opacity:1, scale:1}} exit={{opacity:0, scale:0.9}} className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-                <div className="bg-[#1565C0] p-6 text-white flex justify-between items-center">
-                  <h3 className="text-xl font-bold">Configuración de Reporte</h3>
-                  <button onClick={() => setModalConfig(false)}><X size={24} /></button>
+            <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+              <motion.div initial={{opacity:0, scale:0.9}} animate={{opacity:1, scale:1}} exit={{opacity:0, scale:0.9}} className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+                <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gradient-to-r from-blue-50 to-white">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-[#1565C0] text-white rounded-lg flex items-center justify-center shadow-md">
+                      <Filter size={20} />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900">Configuración</h3>
+                      <p className="text-sm text-gray-500 font-medium">Personalizar reporte</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setModalConfig(false)} className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"><X size={24} /></button>
                 </div>
                 <div className="p-8 space-y-6">
                   <div className="space-y-3">
@@ -118,9 +126,11 @@ export default function ReportesPagina() {
                       <option>Barras Comparativas</option>
                     </select>
                   </div>
-                  <button onClick={() => setModalConfig(false)} className="w-full bg-[#1565C0] text-white py-3 rounded-xl font-bold">
-                    Aplicar Cambios
-                  </button>
+                  <div className="pt-4 border-t border-gray-100">
+                    <button onClick={() => setModalConfig(false)} className="w-full bg-[#1565C0] text-white py-3 rounded-xl font-bold hover:bg-[#0D47A1] transition-all shadow-md">
+                      Aplicar Cambios
+                    </button>
+                  </div>
                 </div>
               </motion.div>
             </div>

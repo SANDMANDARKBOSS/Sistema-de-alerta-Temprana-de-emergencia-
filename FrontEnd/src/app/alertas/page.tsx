@@ -10,6 +10,7 @@ import { Paginacion } from '../../components/paginacion/Paginacion';
 import { getAlertas } from '../../services/api/client';
 import { MOCK_ALERTAS } from '../../services/mock-data';
 import { AlertaActiva, Ingreso, ResumenAlertas } from '../../shared/models';
+import { DetallesAlertaModal } from '../../components/tabla-alertas/DetallesAlertaModal';
 
 function mapIngresoToAlerta(ingreso: Ingreso): AlertaActiva {
   const estado =
@@ -32,7 +33,7 @@ function mapIngresoToAlerta(ingreso: Ingreso): AlertaActiva {
         : estado === 'en-validacion'
           ? 'Pendiente de revisión'
           : 'En proceso',
-    horaIngreso: new Date(),
+    horaIngreso: new Date((ingreso as any).fechaIngresoOriginal || new Date()),
     horaIngresoTexto: ingreso.horaIngreso
   };
 }
@@ -53,6 +54,7 @@ export default function AlertasPagina() {
   const [paginaActual, setPaginaActual] = useState(1);
   const [filasPorPagina, setFilasPorPagina] = useState(10);
   const [estadoFiltro, setEstadoFiltro] = useState<string | null>(null);
+  const [alertaSeleccionada, setAlertaSeleccionada] = useState<AlertaActiva | null>(null);
 
   const cargarAlertas = useCallback(async () => {
     try {
@@ -126,8 +128,8 @@ export default function AlertasPagina() {
           <TablaAlertas
             alertas={alertas}
             cargando={cargando}
-            onVerDetalles={(a) => console.log('Ver alerta:', a)}
-            onAccionContextual={(a, acc) => console.log('Accion:', acc, a)}
+            onVerDetalles={(a) => setAlertaSeleccionada(a)}
+            onAccionContextual={(a, acc) => setAlertaSeleccionada(a)}
           />
           <Paginacion
             paginaActual={paginaActual}
@@ -138,6 +140,15 @@ export default function AlertasPagina() {
           />
         </div>
       </div>
+
+      <DetallesAlertaModal 
+        alerta={alertaSeleccionada}
+        onClose={() => setAlertaSeleccionada(null)}
+        onMarcarGestionada={(id) => {
+          // Por ahora solo cerramos, en un futuro se conecta con API
+          setAlertaSeleccionada(null);
+        }}
+      />
     </MainLayout>
   );
 }

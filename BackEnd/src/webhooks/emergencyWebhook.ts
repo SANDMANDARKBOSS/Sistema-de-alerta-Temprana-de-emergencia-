@@ -3,12 +3,12 @@ import { z } from 'zod';
 import { io } from '../server';
 import { buscarAseguradoPorCedula, buscarPolizaPorId, crearAlertaEmergencia, actualizarNotificacionAlerta, AlertaData } from '../services/notion.service';
 import { analizarPoliza, DatosPoliza } from '../services/ai.service';
-import { enviarNotificacionHospital, enviarNotificacionGestor, DatosNotificacion } from '../services/email.service';
-import { prisma } from '../config/database';
+import { enviarNotificacionHospital, enviarNotificacionGestor, enviarNotificacionPaciente, DatosNotificacion } from '../services/email.service';
 
 const webhookSchema = z.object({
   cedula: z.string().min(1, "La cédula es requerida"),
-  hospital: z.string().min(1, "El hospital es requerido")
+  hospital: z.string().min(1, "El hospital es requerido"),
+  motivo: z.string().min(1, "El motivo de ingreso es requerido")
 });
 
 function emitLog(tipo: 'inicio' | 'notion' | 'ia' | 'email' | 'error' | 'success', mensaje: string) {
@@ -26,47 +26,20 @@ export const emergencyWebhook = async (req: Request, res: Response): Promise<voi
       return;
     }
 
-    const { cedula, hospital } = result.data;
-    emitLog('inicio', `Webhook recibido: cédula ${cedula} en ${hospital}`);
+    const { cedula, hospital, motivo } = result.data;
+    emitLog('inicio', `Webhook recibido: cédula ${cedula} en ${hospital} por ${motivo}`);
 
     // 2. Buscar asegurado en Notion
     let asegurado = await buscarAseguradoPorCedula(cedula);
-    let poliza = null;
-
-    if (!asegurado) {
-      emitLog('notion', `Asegurado no encontrado en Notion, buscando en base local...`);
-      const localAsegurado = await prisma.asegurado.findFirst({ where: { cedula } });
-      
-      if (localAsegurado) {
-        asegurado = {
-          id: localAsegurado.id,
-          nombre: localAsegurado.nombre,
-          cedula: localAsegurado.cedula,
-          polizaId: localAsegurado.polizaId,
-          email: localAsegurado.email
-        };
-        
-        const localPoliza = await prisma.poliza.findFirst({ where: { polizaId: localAsegurado.polizaId } });
-        if (localPoliza) {
-          poliza = {
-            id: localPoliza.id,
-            polizaId: localPoliza.polizaId,
-            estado: localPoliza.estado,
-            cobertura: localPoliza.cobertura,
-            preExistencias: localPoliza.preExistencias
-          };
-        }
-      }
-    } else {
-      emitLog('notion', `Asegurado encontrado en Notion: ${asegurado.nombre}`);
-      poliza = await buscarPolizaPorId(asegurado.polizaId);
-    }
 
     if (!asegurado) {
       emitLog('error', `Asegurado no encontrado para la cédula ${cedula}`);
       res.status(404).json({ error: 'Asegurado no encontrado' });
       return;
     }
+    
+    emitLog('notion', `Asegurado encontrado en Notion: ${asegurado.nombre}`);
+    const poliza = await buscarPolizaPorId(asegurado.polizaId);
 
     // 3. Buscar póliza asociada
     if (!poliza) {
@@ -83,7 +56,8 @@ export const emergencyWebhook = async (req: Request, res: Response): Promise<voi
       estadoPoliza: poliza.estado,
       preExistencias: poliza.preExistencias,
       cobertura: poliza.cobertura,
-      hospital: hospital
+      hospital: hospital,
+      motivoIngreso: motivo
     };
     const analisisIA = await analizarPoliza(datosPoliza);
     emitLog('ia', `Análisis IA completado: Validación ${analisisIA.validacion}, Riesgo ${analisisIA.riesgo}`);
@@ -96,36 +70,16 @@ export const emergencyWebhook = async (req: Request, res: Response): Promise<voi
       polizaId: poliza.polizaId,
       fechaIngreso: fechaHora,
       estadoPoliza: poliza.estado,
-      preExistencias: poliza.preExistencias,
+      preExistencias: poliza.preExistencias ? `${poliza.preExistencias}\n\n[Análisis IA]: ${analisisIA.resumen}` : `[Análisis IA]: ${analisisIA.resumen}`,
       notificacionEnviada: false,
       hospital: hospital
     };
     const alertaId = await crearAlertaEmergencia(alertaData);
     
-    // Guardar en Prisma localmente SIEMPRE para asegurar visibilidad inmediata
-    try {
-      await prisma.alerta.create({
-        data: {
-          nombre: asegurado.nombre,
-          cedulaPaciente: asegurado.cedula,
-          polizaId: poliza.polizaId,
-          estadoPoliza: poliza.estado,
-          hospital: hospital,
-          notificacionEnviada: false,
-          resumenIA: analisisIA.resumen,
-          gestorAsignado: 'Laura Martínez',
-          notionSyncId: alertaId || 'pending'
-        }
-      });
-      emitLog('notion', `Alerta guardada en base local`);
-    } catch (err) {
-      console.error('Error Prisma:', err);
-    }
-
-    if (!alertaId) {
-      emitLog('error', `Nota: Sincronización con Notion fallida, usando base local`);
-    } else {
+    if (alertaId) {
       emitLog('notion', `Alerta creada en Notion exitosamente`);
+    } else {
+      emitLog('error', `Nota: Sincronización con Notion fallida`);
     }
 
     // 6. Enviar emails en paralelo
@@ -137,24 +91,20 @@ export const emergencyWebhook = async (req: Request, res: Response): Promise<voi
       preExistencias: poliza.preExistencias,
       cobertura: poliza.cobertura,
       hospital: hospital,
+      motivoIngreso: motivo,
       analisis: analisisIA,
       fechaHora: new Date().toLocaleString('es-CO')
     };
 
-    emitLog('email', 'Enviando notificaciones simultáneas al hospital y al gestor...');
-    const [emailHospOk, emailGestorOk] = await Promise.all([
+    emitLog('email', 'Enviando notificaciones simultáneas al hospital, gestor y paciente...');
+    const [emailHospOk, emailGestorOk, emailPacienteOk] = await Promise.all([
       enviarNotificacionHospital(datosEmail),
-      enviarNotificacionGestor(datosEmail)
+      enviarNotificacionGestor(datosEmail),
+      asegurado.email ? enviarNotificacionPaciente(datosEmail, asegurado.email) : Promise.resolve(false)
     ]);
 
-    if (emailHospOk || emailGestorOk) {
+    if (emailHospOk || emailGestorOk || emailPacienteOk) {
       if (alertaId) await actualizarNotificacionAlerta(alertaId);
-      
-      // Actualizar en Prisma
-      await prisma.alerta.updateMany({
-        where: { cedulaPaciente: asegurado.cedula, polizaId: poliza.polizaId, hospital: hospital },
-        data: { notificacionEnviada: true }
-      });
 
       emitLog('success', `Notificaciones enviadas. Alerta actualizada.`);
     } else {
@@ -178,7 +128,8 @@ export const emergencyWebhook = async (req: Request, res: Response): Promise<voi
       analisis: analisisIA,
       emailsEnviados: {
         hospital: emailHospOk,
-        gestor: emailGestorOk
+        gestor: emailGestorOk,
+        paciente: emailPacienteOk
       }
     });
 

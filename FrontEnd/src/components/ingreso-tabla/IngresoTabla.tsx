@@ -1,6 +1,7 @@
 import React, { memo } from 'react';
 import { Ingreso } from '../../shared/models';
 import { clsx } from 'clsx';
+import Link from 'next/link';
 
 interface IngresoTablaProps {
   ingresos: Ingreso[];
@@ -11,7 +12,7 @@ export const IngresoTabla: React.FC<IngresoTablaProps> = memo(({ ingresos }) => 
     <div className="bg-white rounded-[12px] shadow-[0_1px_3px_rgba(0,0,0,0.08)] overflow-hidden w-full">
       <div className="p-6 border-b border-gray-100 flex justify-between items-center">
         <h3 className="text-lg font-bold text-[#111827]">Ingresos en Tiempo Real</h3>
-        <button className="text-[#1565C0] text-sm font-semibold hover:underline">Ver todos</button>
+        <Link href="/ingresos" className="text-[#1565C0] text-sm font-semibold hover:underline">Ver todos</Link>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-left">
