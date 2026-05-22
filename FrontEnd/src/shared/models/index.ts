@@ -8,16 +8,18 @@ export interface Ingreso {
     avatar?: string;
   };
   motivo: string;
-  poliza: 'Póliza Válida' | 'En Validación' | 'Póliza Inválida';
-  estado: 'Notificado' | 'Pendiente';
-  horaIngreso: string; // "09:35 AM"
+  poliza: 'Póliza Válida' | 'En Validación' | 'Póliza Inválida' | 'VIGENTE' | 'VENCIDA' | 'SUSPENDIDA';
+  estado: 'Notificado' | 'Pendiente' | 'Validada' | 'Requiere Revisión';
+  horaIngreso?: string; // "09:35 AM"
 }
 
 export interface IngresoCompleto extends Ingreso {
   polizaNumero: string;     // "POL-12345678"
-  polizaPlan: string;       // "Salud Integral"
+  prioridad?: string;
+  polizaPlan?: string;       // "Salud Integral"
   fecha: string;            // "24/05/2024"
   estadoSubtexto: string;   // "Notificado" | "Pendiente" | "No cubierta"
+  tiempoEspera?: string;
 }
 
 export interface Notificacion {

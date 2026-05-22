@@ -3,7 +3,7 @@
 import React, { memo, useEffect, useRef } from 'react';
 import { LineChart, Line, ResponsiveContainer } from 'recharts';
 import { clsx } from 'clsx';
-import * as anime from 'animejs';
+import anime from 'animejs';
 
 interface MetricCardProps {
   titulo: string;
@@ -44,35 +44,19 @@ export const MetricCard: React.FC<MetricCardProps> = memo(({
         return Math.floor(val).toLocaleString('es-CO');
       };
 
-      if (typeof anime === 'function') {
-        anime({
-          targets: countRef.current,
-          innerHTML: [0, numValue],
-          easing: 'easeOutExpo',
-          duration: 1500,
-          round: 1,
-          update: function(anim: any) {
-            if (countRef.current) {
-              const currentNum = parseInt(anim.animations[0].currentValue, 10);
-              countRef.current.innerHTML = isNaN(currentNum) ? '0' : formattedValue(currentNum);
-            }
+      anime({
+        targets: countRef.current,
+        innerHTML: [0, numValue],
+        easing: 'easeOutExpo',
+        duration: 1500,
+        round: 1,
+        update: function(anim: any) {
+          if (countRef.current) {
+            const currentNum = parseInt(anim.animations[0].currentValue, 10);
+            countRef.current.innerHTML = isNaN(currentNum) ? '0' : formattedValue(currentNum);
           }
-        });
-      } else if ((anime as any)?.default) {
-        (anime as any).default({
-          targets: countRef.current,
-          innerHTML: [0, numValue],
-          easing: 'easeOutExpo',
-          duration: 1500,
-          round: 1,
-          update: function(anim: any) {
-            if (countRef.current) {
-              const currentNum = parseInt(anim.animations[0].currentValue, 10);
-              countRef.current.innerHTML = isNaN(currentNum) ? '0' : formattedValue(currentNum);
-            }
-          }
-        });
-      }
+        }
+      });
     }
   }, [valor, isNumber]);
 

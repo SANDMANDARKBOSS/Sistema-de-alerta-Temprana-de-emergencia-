@@ -15,9 +15,9 @@ export default function ConfiguracionPagina() {
     formatoHora: '12h',
     institucion: {
       nombre: 'Hospital Central',
-      direccion: 'Av. Salud 1234, San Isidro, Lima, Perú',
-      telefono: '+51 1 234 5678',
-      correo: 'contacto@hospitalcentral.com'
+      direccion: 'Av. 11 de Noviembre Riobamba - Chimborazo',
+      telefono: '+593 999999999',
+      correo: 'hospital_demo@yopmail.com'
     },
     validacionAutomatica: true,
     cierreAutomaticoCasos: true

@@ -34,7 +34,7 @@ function mapIngresoToAlerta(ingreso: Ingreso): AlertaActiva {
           ? 'Pendiente de revisión'
           : 'En proceso',
     horaIngreso: new Date((ingreso as any).fechaIngresoOriginal || new Date()),
-    horaIngresoTexto: ingreso.horaIngreso
+    horaIngresoTexto: ingreso.horaIngreso || '--:--'
   };
 }
 
