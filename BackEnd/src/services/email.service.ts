@@ -233,13 +233,52 @@ function buildPacienteHtml(datos: DatosNotificacion): string {
   `;
 }
 
+async function enviarConResend(to: string, subject: string, html: string, rol: string): Promise<boolean> {
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${env.RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'Medix Alertas <onboarding@resend.dev>',
+        to: [to],
+        subject: subject,
+        html: html
+      })
+    });
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error(`[Resend] ❌ Error enviando a ${rol} (${to}):`, errorText);
+      // Si falla porque el dominio no está verificado (Free Tier)
+      if (res.status === 403) {
+        console.error(`[Resend] ⚠️ IMPORTANTE: En el plan gratuito de Resend, solo puedes enviar correos a la dirección con la que te registraste. Cambia el destino a tu propio correo.`);
+      }
+      return false;
+    }
+    
+    console.log(`[Resend] ✅ Correo enviado exitosamente al ${rol} (${to})`);
+    return true;
+  } catch (error) {
+    console.error(`[Resend] ❌ Excepción enviando a ${rol}:`, error);
+    return false;
+  }
+}
+
 export async function enviarNotificacionHospital(datos: DatosNotificacion): Promise<boolean> {
+  const subject = `[ALERTA EMERGENCIA] ${datos.nombrePaciente} — Póliza ${datos.estadoPoliza}`;
+  const to = env.DESTINATION_HOSPITAL || 'hospital_prueba@yopmail.com';
+
+  if (env.RESEND_API_KEY) {
+    return enviarConResend(to, subject, buildHtml(datos), 'Hospital');
+  }
+
   const transporter = await getTransporter();
   if (!transporter) return false;
 
-  const subject = `[ALERTA EMERGENCIA] ${datos.nombrePaciente} — Póliza ${datos.estadoPoliza}`;
   try {
-    const to = env.DESTINATION_HOSPITAL || 'hospital_prueba@yopmail.com';
     const from = env.SMTP_USER ? `"Sistema Alertas Salud" <${env.SMTP_USER}>` : '"Sistema Alertas Salud" <alerta_prueba@yopmail.com>';
     
     const info = await transporter.sendMail({
@@ -263,12 +302,17 @@ export async function enviarNotificacionHospital(datos: DatosNotificacion): Prom
 }
 
 export async function enviarNotificacionGestor(datos: DatosNotificacion): Promise<boolean> {
+  const subject = `[ALERTA EMERGENCIA] ${datos.nombrePaciente} — Póliza ${datos.estadoPoliza}`;
+  const to = env.DESTINATION_INSURANCE || 'gestor_seguros@yopmail.com';
+
+  if (env.RESEND_API_KEY) {
+    return enviarConResend(to, subject, buildHtml(datos), 'Gestor');
+  }
+
   const transporter = await getTransporter();
   if (!transporter) return false;
 
-  const subject = `[ALERTA EMERGENCIA] ${datos.nombrePaciente} — Póliza ${datos.estadoPoliza}`;
   try {
-    const to = env.DESTINATION_INSURANCE || 'gestor_seguros@yopmail.com';
     const from = env.SMTP_USER ? `"Sistema Alertas Salud" <${env.SMTP_USER}>` : '"Sistema Alertas Salud" <alerta_prueba@yopmail.com>';
     
     const info = await transporter.sendMail({
@@ -292,12 +336,17 @@ export async function enviarNotificacionGestor(datos: DatosNotificacion): Promis
 }
 
 export async function enviarNotificacionPaciente(datos: DatosNotificacion, emailPaciente: string): Promise<boolean> {
+  const subject = `[ALERTA EMERGENCIA] Notificación de Ingreso - Póliza ${datos.estadoPoliza}`;
+  const to = env.SMTP_USER ? emailPaciente : (emailPaciente || 'paciente_prueba@yopmail.com');
+
+  if (env.RESEND_API_KEY) {
+    return enviarConResend(to, subject, buildPacienteHtml(datos), 'Paciente');
+  }
+
   const transporter = await getTransporter();
   if (!transporter) return false;
 
-  const subject = `[ALERTA EMERGENCIA] Notificación de Ingreso - Póliza ${datos.estadoPoliza}`;
   try {
-    const to = env.SMTP_USER ? emailPaciente : (emailPaciente || 'paciente_prueba@yopmail.com');
     const from = env.SMTP_USER ? `"Sistema Alertas Salud" <${env.SMTP_USER}>` : '"Sistema Alertas Salud" <alerta_prueba@yopmail.com>';
     
     const info = await transporter.sendMail({
