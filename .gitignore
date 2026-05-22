@@ -1,38 +1,55 @@
+# ── Dependencias ──────────────────────────────────────────────
 node_modules/
 .pnp
 .pnp.js
-.next/
-out/
-build/
-dist/
-coverage/
+
+# ── Next.js ───────────────────────────────────────────────────
+FrontEnd/.next/
+FrontEnd/out/
+# No ignorar .next/standalone — Render lo necesita para producción
+# (se genera en build, no se sube al repo; Render hace el build)
+
+# ── Backend compilado ─────────────────────────────────────────
+BackEnd/dist/
+
+# ── Base de datos local ───────────────────────────────────────
+BackEnd/prisma/dev.db
+BackEnd/prisma/dev.db-journal
+prisma/dev.db
+prisma/dev.db-journal
+
+# ── Variables de entorno (NUNCA subir .env con secretos) ──────
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+# .env.example SÍ se sube (no tiene secretos reales)
+
+# ── Logs ──────────────────────────────────────────────────────
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+*.log
+*.tmp
+*.swp
+
+# ── Sistema operativo ──────────────────────────────────────────
 .DS_Store
 Thumbs.db
+
+# ── IDEs ──────────────────────────────────────────────────────
 .vscode/*
 !.vscode/extensions.json
 .idea/
 *.tsbuildinfo
-prisma/dev.db
-prisma/dev.db-journal
+
+# ── Temporales ────────────────────────────────────────────────
 .cache/
 .temp/
 tmp/
+coverage/
 *.lcov
 uploads/
 storage/
-*.log
-*.tmp
-*.swp
-FrontEnd/.next
-FrontEnd/node_modules
-BackEnd/node_modules
-BackEnd/dist

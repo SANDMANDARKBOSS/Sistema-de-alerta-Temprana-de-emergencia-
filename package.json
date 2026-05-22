@@ -1,0 +1,16 @@
+{
+  "name": "medix-sistema-alerta",
+  "version": "1.0.0",
+  "description": "Sistema de Alerta Temprana de Emergencias — Medix",
+  "private": true,
+  "engines": {
+    "node": "20.x",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "npm install --prefix FrontEnd --legacy-peer-deps && npm run build --prefix FrontEnd && npm install --prefix BackEnd && npm run build --prefix BackEnd",
+    "start": "node BackEnd/dist/server.js",
+    "dev:back": "npm run dev --prefix BackEnd",
+    "dev:front": "npm run dev --prefix FrontEnd"
+  }
+}

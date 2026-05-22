@@ -1,0 +1,84 @@
+# ════════════════════════════════════════════════════════════════
+#  render.yaml — Render detecta este archivo automáticamente
+#  UN SOLO servicio web que sirve Frontend + Backend
+# ════════════════════════════════════════════════════════════════
+
+services:
+  - type: web
+    name: medix-sistema-alerta
+    runtime: node
+    region: oregon
+    plan: free
+
+    rootDir: .
+
+    # 1. Instala FrontEnd, compila Next.js, instala BackEnd, compila TypeScript
+    buildCommand: >-
+      npm install --prefix FrontEnd --legacy-peer-deps &&
+      npm run build --prefix FrontEnd &&
+      npm install --prefix BackEnd &&
+      npm run build --prefix BackEnd
+
+    # 2. Arranca Express que sirve API + Next.js en el mismo puerto
+    startCommand: node BackEnd/dist/server.js
+
+    # Render inyecta PORT automáticamente — NO lo agregues aquí
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # ⚠️  Reemplaza con la URL real de tu servicio en Render
+      - key: FRONTEND_URL
+        value: https://medix-sistema-alerta.onrender.com
+
+      - key: NEXT_PUBLIC_API_URL
+        value: https://medix-sistema-alerta.onrender.com
+
+      - key: DATABASE_URL
+        value: file:./BackEnd/prisma/dev.db
+
+      # Las siguientes se configuran en Render Dashboard (sync:false = te las pide)
+      - key: NOTION_TOKEN
+        sync: false
+
+      - key: NOTION_ASEGURADOS_DB_ID
+        sync: false
+
+      - key: NOTION_POLIZAS_DB_ID
+        sync: false
+
+      - key: NOTION_ALERTAS_DB_ID
+        sync: false
+
+      - key: GEMINI_API_KEY
+        sync: false
+
+      - key: GEMINI_MODEL
+        value: gemini-2.0-flash
+
+      - key: GROQ_API_KEY
+        sync: false
+
+      - key: GROQ_MODEL
+        value: llama-3.3-70b-versatile
+
+      - key: SMTP_SERVER
+        value: smtp.gmail.com
+
+      - key: SMTP_PORT
+        value: "587"
+
+      - key: SMTP_SECURE
+        value: "false"
+
+      - key: SMTP_USER
+        sync: false
+
+      - key: SMTP_PASSWORD
+        sync: false
+
+      - key: DESTINATION_HOSPITAL
+        value: hospital_demo@yopmail.com
+
+      - key: DESTINATION_INSURANCE
+        value: seguro_demo@yopmail.com
