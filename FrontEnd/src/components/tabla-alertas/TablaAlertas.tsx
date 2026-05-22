@@ -4,7 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { AlertaActiva } from '../../shared/models';
 import { MoreVertical } from 'lucide-react';
 import { clsx } from 'clsx';
-import * as anime from 'animejs';
+import anime from 'animejs';
 
 interface TablaAlertasProps {
   alertas: AlertaActiva[];
@@ -39,25 +39,14 @@ const StatusBadge = ({ estado }: { estado: string }) => {
 
   useEffect(() => {
     if (estado === 'invalida' && dotRef.current) {
-      if (typeof anime === 'function') {
-        anime({
-          targets: dotRef.current,
-          scale: [1, 1.5, 1],
-          opacity: [1, 0.5, 1],
-          duration: 1500,
-          loop: true,
-          easing: 'easeInOutSine'
-        });
-      } else if ((anime as any)?.default) {
-        (anime as any).default({
-          targets: dotRef.current,
-          scale: [1, 1.5, 1],
-          opacity: [1, 0.5, 1],
-          duration: 1500,
-          loop: true,
-          easing: 'easeInOutSine'
-        });
-      }
+      anime({
+        targets: dotRef.current,
+        scale: [1, 1.5, 1],
+        opacity: [1, 0.5, 1],
+        duration: 1500,
+        loop: true,
+        easing: 'easeInOutSine'
+      });
     }
   }, [estado]);
 

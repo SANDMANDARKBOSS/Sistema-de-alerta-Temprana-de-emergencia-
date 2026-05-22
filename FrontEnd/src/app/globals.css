@@ -7,12 +7,24 @@
 :root {
   --font-dm-sans: 'DM Sans', sans-serif;
   --font-inter: 'Inter', sans-serif;
+  --medix-dark: #0F172A;
+  --medix-primary: #2563EB;
+  --medix-secondary: #22D3EE;
+  --medix-accent: #2DD4BF;
+  --medix-danger: #FF5A5F;
+  --medix-background: #F8FAFC;
+  --medix-border: #E2E8F0;
+  --medix-text: #0F172A;
+  --medix-text-soft: #64748B;
+  --medix-gradient: linear-gradient(135deg, #2DD4BF 0%, #22D3EE 45%, #2563EB 100%);
 }
 
 body {
   font-family: var(--font-dm-sans);
-  background-color: #F8FAFC;
-  color: #111827;
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.08), transparent 20%),
+    linear-gradient(180deg, #F8FAFC 0%, #F3F7FB 100%);
+  color: var(--medix-text);
   margin: 0;
 }
 
@@ -34,7 +46,7 @@ h1, h2, h3, h4, h5, h6 {
 .form-group label {
   font-size: 13px;
   font-weight: 500;
-  color: #374151;
+  color: var(--medix-text-soft);
 }
 
 .form-input,
@@ -42,10 +54,10 @@ h1, h2, h3, h4, h5, h6 {
 .form-select {
   width: 100%;
   padding: 9px 12px;
-  border: 1px solid #E5E7EB;
+  border: 1px solid var(--medix-border);
   border-radius: 8px;
   font-size: 14px;
-  color: #111827;
+  color: var(--medix-text);
   background: white;
   transition: border-color 0.2s, box-shadow 0.2s;
   font-family: inherit;
@@ -56,8 +68,8 @@ h1, h2, h3, h4, h5, h6 {
 .form-textarea:focus,
 .form-select:focus {
   outline: none;
-  border-color: #1565C0;
-  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.1);
+  border-color: var(--medix-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
 }
 
 .form-textarea {
@@ -80,7 +92,7 @@ h1, h2, h3, h4, h5, h6 {
   align-items: center;
   justify-content: center;
   padding: 9px 20px;
-  background: #1565C0;
+  background: var(--medix-primary);
   color: white;
   border: none;
   border-radius: 8px;
@@ -92,17 +104,17 @@ h1, h2, h3, h4, h5, h6 {
   width: fit-content;
 }
 
-.btn-guardar:hover { background: #1251A3; }
-.btn-guardar:active { background: #0D3E80; }
-.btn-guardar.success { background: #4CAF50; }
-.btn-guardar.success:hover { background: #43A047; }
+.btn-guardar:hover { background: #1D4ED8; }
+.btn-guardar:active { background: #1E40AF; }
+.btn-guardar.success { background: #16A34A; }
+.btn-guardar.success:hover { background: #15803D; }
 
 .politica-row {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
   padding: 12px 0;
-  border-bottom: 1px solid #F3F4F6;
+  border-bottom: 1px solid var(--medix-border);
   gap: 16px;
 }
 
@@ -118,11 +130,11 @@ h1, h2, h3, h4, h5, h6 {
 .politica-titulo {
   font-size: 14px;
   font-weight: 500;
-  color: #111827;
+  color: var(--medix-text);
 }
 
 .politica-desc {
   font-size: 12px;
-  color: #6B7280;
+  color: var(--medix-text-soft);
   line-height: 1.4;
 }
