@@ -249,7 +249,7 @@ async function enviarConSendGrid(to: string, subject: string, html: string, rol:
           }
         ],
         from: {
-          email: 'yambayjosue@gmail.com',
+          email: 'marcotorresmartines@gmail.com',
           name: 'Sistema Medix'
         },
         content: [
